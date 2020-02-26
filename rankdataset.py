@@ -22,7 +22,6 @@ def rank_data(data, label, flattened_shape, index, plot_type='2d', n_components=
     plt.ylabel('Cum. var')
     #plt.xticks(rotation=45)
 
-
     if plot_type=='2d':
         plt.subplot(10,2,2*index-1)
         plt.scatter(data_transformed[:,0], data_transformed[:,1])
@@ -59,17 +58,39 @@ def arrange_data(x_train, y_train, name, flattened_shape, plot_type, n_component
 
     return ranked_train_list
 
+def visualize_data(x_train, img_rows, img_cols, channels, dataset_name):
+    fig = plt.figure()
+    fig.suptitle(dataset_name + ': The Best and the worst samples in the training dataset') 
+
+    for i in range(0,10):
+        plt.subplot(10,2,2*(i+1)-1)
+        if dataset_name == 'cifar10':
+            first = x_train[i][0].reshape((img_rows, img_cols, channels))
+            plt.imshow(first, interpolation='nearest')
+        else:
+            first = x_train[i][0].reshape((img_rows, img_cols))
+            plt.imshow(first, cmap='gray')
+     
+        plt.subplot(10,2,2*(i+1))    
+        if dataset_name == 'cifar10':
+            last = x_train[i][-1].reshape((img_rows, img_cols, channels))     
+            plt.imshow(last, interpolation='nearest')
+        else:
+            last = x_train[i][-1].reshape((img_rows, img_cols))
+            plt.imshow(last, cmap='gray')
+
 # input image dimensions cifar10
 img_rows, img_cols, channels = 32, 32, 3
-
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 x_train_cifar10 = arrange_data(x_train, y_train.flatten(), 'cifar10', img_rows*img_cols*channels, '2d', 30)
+visualize_data(x_train_cifar10, img_rows, img_cols, channels, 'cifar10')
 
 # input image dimensions mnist
 img_rows, img_cols, channels = 28, 28, 1
-
 # the data, split between train and test sets
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train_mnist = arrange_data(x_train, y_train, 'mnist', img_rows*img_cols*channels, '2d', 30)
+x_train_mnist = arrange_data(x_train, y_train, 'mnist', img_rows*img_cols*channels, '2d', 90)
+visualize_data(x_train_mnist, img_rows, img_cols, channels, 'mnist')
+
 
 plt.show()
