@@ -6,11 +6,16 @@ Gets to 99.25% test accuracy after 12 epochs
 from __future__ import print_function
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras import backend as K
+from sklearn.metrics import classification_report
+from modelSelector import ModelSelector
+from tensorflow.keras.datasets import cifar10, mnist
 import os
+import matplotlib.pyplot as plt
+
 
 batch_size = 128
 num_classes = 10
@@ -47,36 +52,51 @@ print(x_test.shape[0], 'test samples')
 y_train = tf.keras.utils.to_categorical(y_train, num_classes)
 y_test = tf.keras.utils.to_categorical(y_test, num_classes)
 
-model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3),
-                 activation='relu',
-                 input_shape=input_shape))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(num_classes, activation='softmax'))
-
-model.compile(loss=tf.keras.losses.categorical_crossentropy,
-              optimizer=tf.keras.optimizers.Adadelta(),
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=1,
-          validation_data=(x_test, y_test))
-
-
 # Save model and weights
-if not os.path.isdir(save_dir):
-    os.makedirs(save_dir)
 model_path = os.path.join(save_dir, model_name)
-model.save(model_path)
-print('Saved trained model at %s ' % model_path)
+print (model_path)
+if os.path.isfile(model_path):
+    model = load_model(model_path)
+else:
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)  
+    model = Sequential()
+    model.add(Conv2D(32, kernel_size=(3, 3),
+                    activation='relu',
+                    input_shape=input_shape))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes, activation='softmax'))
+
+    model.compile(loss=tf.keras.losses.categorical_crossentropy,
+                optimizer=tf.keras.optimizers.Adadelta(),
+                metrics=['accuracy'])
+
+    model.fit(x_train, y_train,
+            batch_size=batch_size,
+            epochs=epochs,
+            verbose=1,
+            validation_data=(x_test, y_test))
+
+    model.save(model_path)
+    print('Saved trained model at %s ' % model_path)
 
 score = model.evaluate(x_test, y_test, verbose=0)
+predictions = model.predict(x_test)
+
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
+
+img_rows, img_cols, channels = 28, 28, 1
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+mnist_model_selector = ModelSelector(img_rows, img_cols, channels, n_components=90, dataset_name='mnist', plot_type='2d', n_plot_sample=5)
+x_train_mnist = mnist_model_selector.arrange_data(x_train, y_train.flatten())
+mnist_model_selector.visualize_data(x_train_mnist)
+mnist_test_score = mnist_model_selector.score_test_data(x_train_mnist, x_test, y_test.flatten())
+mnist_test_score_nn = mnist_model_selector.nn_inference_test_data(x_test, y_test.flatten())
+mnist_corr_score = mnist_model_selector.corr_score_per_label(mnist_test_score, mnist_test_score)
+plt.show()
