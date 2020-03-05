@@ -4,6 +4,7 @@ Gets to 99.25% test accuracy after 12 epochs
 16 seconds per epoch on a GRID K520 GPU.
 '''
 from __future__ import print_function
+import os
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential, load_model
@@ -12,8 +13,6 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras import backend as K
 from sklearn.metrics import classification_report
 from modelSelector import ModelSelector
-from tensorflow.keras.datasets import cifar10, mnist
-import os
 import matplotlib.pyplot as plt
 
 
@@ -86,17 +85,22 @@ else:
     print('Saved trained model at %s ' % model_path)
 
 score = model.evaluate(x_test, y_test, verbose=0)
-predictions = model.predict(x_test)
 
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
+print('Overall Test loss:', score[0])
+print('Overall Test accuracy:', score[1])
 
 img_rows, img_cols, channels = 28, 28, 1
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-mnist_model_selector = ModelSelector(img_rows, img_cols, channels, n_components=90, dataset_name='mnist', plot_type='2d', n_plot_sample=5)
-x_train_mnist = mnist_model_selector.arrange_data(x_train, y_train.flatten())
-mnist_model_selector.visualize_data(x_train_mnist)
-mnist_test_score = mnist_model_selector.score_test_data(x_train_mnist, x_test, y_test.flatten())
-mnist_test_score_nn = mnist_model_selector.nn_inference_test_data(x_test, y_test.flatten())
-mnist_corr_score = mnist_model_selector.corr_score_per_label(mnist_test_score, mnist_test_score)
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+
+# change n_components depending on percentile or no of components 
+model_selector = ModelSelector(img_rows, img_cols, channels, n_components=98, dataset_name='mnist', plot_type='2d', n_plot_sample=5)
+x_train_ranked = model_selector.arrange_data(x_train, y_train.flatten())
+model_selector.visualize_data(x_train_ranked)
+x_test_score, x_test_ranked = model_selector.score_test_data(x_train_ranked, x_test, y_test.flatten())
+model_selector.visualize_data(x_test_ranked, data_type='test')
+x_test_score_nn = model_selector.nn_score_test_data(model, x_test_ranked)
+model_selector.visualize_correlated_inference(x_test_score, x_test_score_nn, "Ranking", "NN")
+
 plt.show()
