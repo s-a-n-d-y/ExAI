@@ -2,6 +2,7 @@ import numpy as np, numpy.random
 from sklearn.datasets import make_blobs
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.linalg import block_diag
 
 # A, known random matrix of dim qxp
 # S, Gaussian samples of dim px1
@@ -32,14 +33,36 @@ class DataGen:
         # Total no of samples
         self.n_samples = n_samples_per_mix*n_mixtures
 
+    '''
     # Returns randomly generated samples X
     def generate_gmm_samples(self):           
         S = np.empty(shape=[self.n_samples, self.n_variate])
         Y = np.empty(shape=self.n_samples)
     
+        # W = error matrix, 0 mean std. dev = 1
+        W = np.random.normal(0, 1, self.n_samples_per_mix)
+        A = np.random.normal(0, 1, (self.n_samples, self.n_variate))
+
         # Multiply each mixture by alpha, where sum(alpha) = 1, generated from Dirichlet
         for i in range(self.n_mixtures):
-            S[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] =  np.random.multivariate_normal(self.mu[i,:], self.cov[i,:,:], self.n_samples_per_mix)
+            mu = np.append(self.mu[i,:], 0)
+            cov = block_diag(self.cov[i,:,:], 1)
+            S[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] =  self.alpha[:,i].item()*np.random.multivariate_normal(mu, cov, self.n_samples_per_mix)
+            Y[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] = i
+
+        X = np.dot(A, S) + W 
+        
+        # Observed samples, original feature distribution, known labels
+        return X, S, Y
+    '''
+    # Returns randomly generated samples X
+    def generate_gmm_samples(self):           
+        S = np.zeros(shape=[self.n_samples, self.n_variate])
+        Y = np.empty(shape=self.n_samples)
+    
+        # Multiply each mixture by alpha, where sum(alpha) = 1, generated from Dirichlet
+        for i in range(self.n_mixtures):
+            S[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] =  self.alpha[:,i].item()*np.random.multivariate_normal(self.mu[i,:], self.cov[i,:,:], self.n_samples_per_mix)
             Y[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] = i
 
         W = np.random.normal(0, 1, self.n_samples)
@@ -79,8 +102,8 @@ class DataGen:
 # Main method
 np.random.seed(256)
 
-# 1000 samples, 1 variate, 10 mixtures
-data = DataGen(500, 3, 10)
+# 1000 samples, 3 variate, 5 mixtures
+data = DataGen(500, 3, 5)
 y, x = data.generate_gmm_samples()
 print(data.mu)
 
