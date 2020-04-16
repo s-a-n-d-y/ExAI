@@ -10,13 +10,13 @@ from scipy.linalg import block_diag
 class DataGen:   
     # n_samples = p
     # n_features = q
-    def __init__(self, n_samples_per_mix, n_variate=3, n_mixtures=10): 
+    def __init__(self, n_samples=1000, n_variate=3, n_mixtures=10, n_dim=2): 
         # No. of samples per mixture in the GMM    
-        self.n_samples_per_mix = n_samples_per_mix
         self.n_mixtures = n_mixtures 
         # The feature distributions can have diff. variates
         # Right now all variates are same
         self.n_variate = n_variate
+        self.n_dim = n_dim
         
         # GMM parameters
         # mu = no. of mixtures x features, Considering univariate mu
@@ -31,17 +31,38 @@ class DataGen:
         self.alpha = np.random.dirichlet(np.ones(self.n_mixtures),size=1)
 
         # Total no of samples
-        self.n_samples = n_samples_per_mix*n_mixtures
+        self.n_samples = n_samples
+
+    
+    # Returns randomly generated samples X
+    def generate_gmm_samples(self):
+        A = np.random.normal(0, 1, (self.n_dim, self.n_variate))      
+        S = np.zeros(shape=[self.n_mixtures, self.n_samples, self.n_variate])
+        X = np.zeros(shape=[self.n_samples, self.n_dim])
+        W = np.zeros(shape=[self.n_samples, self.n_dim])
+
+        for i in range(self.n_dim):
+            # W = error matrix, 0 mean std. dev = 1
+            W[:,i] = np.random.normal(0, 1, self.n_samples)
+
+        # Multiply each mixture by alpha, where sum(alpha) = 1, generated from Dirichlet
+        for i in range(self.n_mixtures):
+            S[i,:,:] = self.alpha[:,i].item()*np.random.multivariate_normal(self.mu[i,:], self.cov[i,:,:], self.n_samples)
+            X += np.dot(S[i,:,:], A.T) + W
+        
+        # Observed samples, transformation (NN), original feature distribution, noise
+        return X, A, S, W
+
 
     '''
     # Returns randomly generated samples X
     def generate_gmm_samples(self):           
-        S = np.empty(shape=[self.n_samples, self.n_variate])
+        S = np.empty(shape=[self.n_samples, self.n_projection])
         Y = np.empty(shape=self.n_samples)
     
         # W = error matrix, 0 mean std. dev = 1
-        W = np.random.normal(0, 1, self.n_samples_per_mix)
-        A = np.random.normal(0, 1, (self.n_samples, self.n_variate))
+        W = np.random.normal(0, 1, self.n_projection)
+        A = np.random.normal(0, 1, (self.n_projection, self.n_variate))
 
         # Multiply each mixture by alpha, where sum(alpha) = 1, generated from Dirichlet
         for i in range(self.n_mixtures):
@@ -55,26 +76,9 @@ class DataGen:
         # Observed samples, original feature distribution, known labels
         return X, S, Y
     '''
-    # Returns randomly generated samples X
-    def generate_gmm_samples(self):           
-        S = np.zeros(shape=[self.n_samples, self.n_variate])
-        Y = np.empty(shape=self.n_samples)
-    
-        # Multiply each mixture by alpha, where sum(alpha) = 1, generated from Dirichlet
-        for i in range(self.n_mixtures):
-            S[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] =  self.alpha[:,i].item()*np.random.multivariate_normal(self.mu[i,:], self.cov[i,:,:], self.n_samples_per_mix)
-            Y[i*self.n_samples_per_mix:(i+1)*self.n_samples_per_mix] = i
-
-        W = np.random.normal(0, 1, self.n_samples)
-        A = np.random.normal(0, 1, (self.n_samples, self.n_variate))
-
-        # X = np.dot(A, S) + W 
-        # Observed samples, an assumption of feature distribution, known labels
-        return S, Y #X
-
     # Full rank random correlation matrix
     def generate_cov(self, dim, a=2, display_cov=False):
-        '''
+        
         # Normalized cov
         # https://stats.stackexchange.com/questions/124538/how-to-generate-a-large-full-rank-random-correlation-matrix-with-some-strong-cor/124554
         # 'a' is a tuning parameter
@@ -88,7 +92,7 @@ class DataGen:
         # The data looks nicer
         cov = np.random.rand(dim, dim)
         cov = cov - np.diag(np.diag(cov)) + np.diag(np.random.randint(low = 1, high = 10, size=(dim)))
-        
+        '''
         if display_cov:
             #vals = list(np.array(cov.ravel())[0])
             #plt.hist(vals, range=(-1,1))
@@ -102,16 +106,25 @@ class DataGen:
 # Main method
 np.random.seed(256)
 
-# 1000 samples, 3 variate, 5 mixtures
-data = DataGen(500, 3, 5)
-y, x = data.generate_gmm_samples()
+# 1000 samples, 3 variate feature, 5 mixtures, 2 dimensional data
+data = DataGen(1000, 4, 5, 3)
 print(data.mu)
+# x = obs samples (sample x dimension)
+# a = random matrix (Can be thought of input vector)
+# s = feature transformation matrix (Can be thought as weight matrix)
+# w = noise matrix
+x, a, s, w = data.generate_gmm_samples()
+
 
 # 3D plot
 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(y[:, 0], y[:, 1], y[:, 2], marker='o', c=x, s=25, edgecolor='k')
+fig = plt.figure()
+ax = fig.add_subplot(211, projection='3d')
+ax.scatter(x[:, 0], x[:, 1], x[:, 2], marker='o')
+
+ax = fig.add_subplot(212, projection='3d')
+ax.scatter(x[:, 0], x[:, 1], x[:, 2], marker='o')
+
 plt.show()
 
 
