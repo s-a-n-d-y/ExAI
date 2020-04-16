@@ -10,7 +10,7 @@ from scipy.linalg import block_diag
 class DataGen:   
     # n_samples = p
     # n_features = q
-    def __init__(self, n_samples=1000, n_variate=3, n_mixtures=10, n_dim=2): 
+    def __init__(self, n_samples=1000, n_variate=3, n_mixtures=10, n_dim=2, mixture_weight_random=True, cov_pos_semidefinite=True): 
         # No. of samples per mixture in the GMM    
         self.n_mixtures = n_mixtures 
         # The feature distributions can have diff. variates
@@ -19,20 +19,24 @@ class DataGen:
         self.n_dim = n_dim
         
         # GMM parameters
+        self.cov_pos_semidefinite = cov_pos_semidefinite
+
         # mu = no. of mixtures x features, Considering univariate mu
         self.mu = np.random.randint(low = 0, high = 50, size=(self.n_mixtures, self.n_variate))
         
         # Assuming random std. dev within clusters
         self.cov = np.empty(shape=[self.n_mixtures, self.n_variate, self.n_variate])
         for i in range(self.n_mixtures):
-            self.cov[i,:,:] = self.generate_cov(dim=self.n_variate, display_cov = False)
+            self.cov[i,:,:] = self.generate_cov(dim=self.n_variate, display_cov = False, cov_pos_semidefinite = self.cov_pos_semidefinite)
 
-        # Generate random weights for the GMM from Dirichlet distribution
-        self.alpha = np.random.dirichlet(np.ones(self.n_mixtures),size=1)
+        if mixture_weight_random:
+            # Generate random weights for the GMM from Dirichlet distribution
+            self.alpha = np.random.dirichlet(np.ones(self.n_mixtures),size=1)
+        else:  
+            self.alpha = np.ones((1, self.n_mixtures))
 
         # Total no of samples
         self.n_samples = n_samples
-
     
     # Returns randomly generated samples X
     def generate_gmm_samples(self):
@@ -77,22 +81,22 @@ class DataGen:
         return X, S, Y
     '''
     # Full rank random correlation matrix
-    def generate_cov(self, dim, a=2, display_cov=False):
+    def generate_cov(self, dim, a=2, display_cov=False, cov_pos_semidefinite=True):
+        if cov_pos_semidefinite: 
+            # Normalized cov
+            # https://stats.stackexchange.com/questions/124538/how-to-generate-a-large-full-rank-random-correlation-matrix-with-some-strong-cor/124554
+            # 'a' is a tuning parameter
+            A = np.matrix([np.random.randn(dim) + np.random.randn(1)*a for i in range(dim)])
+            # A = np.matrix([np.random.random(dim) + np.random.random(1)*a for i in range(dim)])
+            AA_T = A*np.transpose(A)
+            C_sqrt = np.diag(np.diag(AA_T)**(-0.5))
+            cov = C_sqrt*AA_T*C_sqrt
+        else:
+            # A simplier cov. May not be normalized!
+            # The data looks nicer
+            cov = np.random.rand(dim, dim)
+            cov = cov - np.diag(np.diag(cov)) + np.diag(np.random.randint(low = 1, high = 10, size=(dim)))
         
-        # Normalized cov
-        # https://stats.stackexchange.com/questions/124538/how-to-generate-a-large-full-rank-random-correlation-matrix-with-some-strong-cor/124554
-        # 'a' is a tuning parameter
-        A = np.matrix([np.random.randn(dim) + np.random.randn(1)*a for i in range(dim)])
-        # A = np.matrix([np.random.random(dim) + np.random.random(1)*a for i in range(dim)])
-        AA_T = A*np.transpose(A)
-        C_sqrt = np.diag(np.diag(AA_T)**(-0.5))
-        cov = C_sqrt*AA_T*C_sqrt
-        '''
-        # A simplier cov. May not be normalized!
-        # The data looks nicer
-        cov = np.random.rand(dim, dim)
-        cov = cov - np.diag(np.diag(cov)) + np.diag(np.random.randint(low = 1, high = 10, size=(dim)))
-        '''
         if display_cov:
             #vals = list(np.array(cov.ravel())[0])
             #plt.hist(vals, range=(-1,1))
@@ -106,40 +110,52 @@ class DataGen:
 # Main method
 np.random.seed(256)
 
-# 1000 samples, 3 variate feature, 5 mixtures, 2 dimensional data
-data = DataGen(1000, 4, 5, 3)
+# 10000 samples, 40 variate feature, 5 mixtures, 2 dimensional data
+data = DataGen(n_samples=10000, n_variate=40, n_mixtures=10, n_dim=2, mixture_weight_random=False, cov_pos_semidefinite=True)
 print(data.mu)
 # x = obs samples (sample x dimension)
-# a = random matrix (Can be thought of input vector)
-# s = feature transformation matrix (Can be thought as weight matrix)
+# a = random matrix (Can be thought of input vector, known)
+# s = feature transformation matrix, n_dim x n_sample (Can be thought as weight matrix)
 # w = noise matrix
 x, a, s, w = data.generate_gmm_samples()
 
+if data.n_dim == 1:
+    # 1D plot
+    plt.figure()
+    plt.subplot(2, 1, 1)
+    plt.hist(x, bins=data.n_samples)
+    plt.subplot(2, 1, 2)
+    for i in range(data.n_mixtures):
+        plt.hist(s[i,:,0], bins=data.n_samples)
+    plt.show()
 
-# 3D plot
+elif data.n_dim == 2:
+    #2-D plot
+    fig = plt.figure()
+    ax = fig.add_subplot(211)
+    ax.scatter(x[:, 0], x[:, 1], marker='o')
 
-fig = plt.figure()
-ax = fig.add_subplot(211, projection='3d')
-ax.scatter(x[:, 0], x[:, 1], x[:, 2], marker='o')
+    ax = fig.add_subplot(212)
+    for i in range(data.n_mixtures):
+        ax.scatter(s[i,:,0], s[i,:,1], marker='o', cmap='virdis', s=25, edgecolor='k')
 
-ax = fig.add_subplot(212, projection='3d')
-ax.scatter(x[:, 0], x[:, 1], x[:, 2], marker='o')
+    plt.show()
 
-plt.show()
+elif data.n_dim >=3:
+    #3-D plot
+    fig = plt.figure()
+    ax = fig.add_subplot(211, projection='3d')
+    ax.scatter(x[:, 0], x[:, 1], x[:, 2], marker='o')
+
+    ax = fig.add_subplot(212, projection='3d')
+    for i in range(data.n_mixtures):
+        ax.scatter(s[i,:,0], s[i,:,1], s[i,:,2], marker='o', cmap='virdis', s=25, edgecolor='k')
+
+    plt.show()
+else:
+    print("No other choice!")
 
 
-# 1D plot
-'''
-plt.figure()
-plt.hist(y,  bins=1000)
-'''
-
-#2-D plot
-'''
-plt.figure()
-plt.scatter(y[:, 0], y[:, 1], marker='o', c=x, s=25, edgecolor='k')
-plt.show()
-'''
 
 
 
