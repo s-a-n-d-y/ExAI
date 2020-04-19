@@ -31,10 +31,8 @@ for mu_val = 1:1:diff_mu_vals
     gm = gmdistribution(mu_S',Css,alpha); % Gaussian mixture model
     %% MSE evaluation of MMSE estimator
     MSE = zeros(length(SNR),1);
-    MNME = zeros(length(SNR),1);
     for count = 1:length(SNR)
         SE = zeros(Monte_Carlo,1);
-        ssfn_NME = zeros(Monte_Carlo,1);
         parfor iter = 1:Monte_Carlo
             n = 1; % number of data points
             S = random(gm,n);
