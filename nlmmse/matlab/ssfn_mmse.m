@@ -12,8 +12,8 @@ grid on;box on;
 M = 10; % number of Gaussian mixtures
 p = 40; %signal dimension
 q = 100; %signal feature space dimension
-n = 300; %no of samples
-Monte_Carlo = 1; % No.of simulations
+n = 1e3; %no of samples
+Monte_Carlo = 50; % No.of simulations
 diff_mu_vals = 10; % No of diff mu to experiment with
 SNR_dB = -20:1:40; % SNR range
 SNR = 10.^(SNR_dB./10); % natural scale
