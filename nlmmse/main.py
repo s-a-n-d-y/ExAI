@@ -9,7 +9,7 @@ def main():
     np.random.seed(256)
 
     # 10000 samples, 40 variate feature, 10 mixtures, 3 dimensional data
-    data = DataGen(n_samples=10000, n_variate=40, n_mixtures=10, n_dim=3, mixture_weight_random=False, cov_pos_semidefinite=True)
+    data = DataGen(n_samples=10000, n_variate=40, n_mixtures=10, n_dim=2, mixture_weight_random=False, cov_pos_semidefinite=True)
     # print(data.mu)
 
     # x_gmm = weighted Pdf of the observed samples per mixture
@@ -17,7 +17,7 @@ def main():
     # a = random matrix (Can be thought of input vector, known)
     # s = feature transformation matrix, n_dim x n_sample (Can be thought as weight matrix)
     # w = noise matrix
-    x_gmm, x, a, s, w = data.generate_gmm_samples()
+    x, a, s = data.generate_gmm_samples()
     # Normalize between -1 and 1
     x = x - x.mean()
     x = x / x.max()
@@ -54,7 +54,7 @@ def main():
         ax = fig.add_subplot(212, projection='3d')
         for i in range(data.n_mixtures):
             ax.scatter(s[i,:,0], s[i,:,1], s[i,:,2], marker='o', cmap='virdis', s=25, edgecolor='k')
-        ax.set_title('Original normalized mixtures of the GMM')
+        ax.set_title('Original normalized weighted mixtures of the GMM')
 
         plt.show()
     else:
