@@ -14,9 +14,9 @@ g=@(x) x.*(x >= 0)+a_leaky_RLU*x.*(x < 0);
 lam=1e2;
 mu=1e3;
 kmax=100;
-alpha=2;
+alpha=1; %alpha=2
 nmax=10;
-eta_n=0.005; %-Inf
+eta_n=-Inf; %0.005; 
 %eta_l=0.1; %-Inf -> If the improvement is less than 0.1 then stop
 eta_l=-Inf;
 lmax=20;
