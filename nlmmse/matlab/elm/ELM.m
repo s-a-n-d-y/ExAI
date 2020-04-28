@@ -1,4 +1,4 @@
-function [T_hat, Tt_hat]=ELM(X, T, Xt, Tt, lam, NumNodes)
+function [T_hat, Tt_hat, train_error, test_error]=ELM(X, T, Xt, Tt, lam, NumNodes)
 
 % % % % % % % Inputs % % % % % % % %
 % X: Train input
@@ -50,5 +50,8 @@ Zt=W*Xt+B;
 
 Yt=g(Zt);
 Tt_hat=O*Yt;
+
+train_error=10*log10(norm(T_hat-T)^2);
+test_error=10*log10(norm(Tt_hat-Tt)^2);
 
 return

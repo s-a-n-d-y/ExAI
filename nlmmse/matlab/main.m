@@ -1,14 +1,19 @@
 close all;clear;clc;
 tic; %comment%
-experiment = 'b';
+experiment = 'a';
 switch experiment
     case 'a' 
-        a = 1:4:80; % scaling parameters
-        b = 40*ones(1,length(a));
+        a = 1:4:100; % scaling parameters
+        b = 10*ones(1,length(a));
     case 'b'
-        b = logspace(2,-3,20);        
+        b = logspace(3,-4,20);        
         a = 1*ones(1,length(b));        
 end
+
+%% Plotting properties as latex
+set(groot,'defaulttextinterpreter','latex');  
+set(groot, 'defaultAxesTickLabelInterpreter','latex');  
+set(groot, 'defaultLegendInterpreter','latex');
 
 %% Gaussian mixture model generation
 M = 40; % number of Gaussian mixtures
@@ -29,8 +34,9 @@ alpha = (1/M)*ones(M,1); %mixing proportions
 Monte_Carlo = 300; % No.of simulations for evaluating optimal MSE
 H = randn(p,q);
 H = normc(H);
-%% MSE evaluation of SSFN
+%% MSE evaluation of SSFN and ELM
 ssfn_MSE = zeros(length(SNR),1);
+elm_MSE = zeros(length(SNR),1);
 optimal_MSE = zeros(length(SNR),1);
 for k = 1:length(SNR)
     mu = a(k)*mu_m; % mean with scaling parameter a(k)
@@ -48,7 +54,7 @@ for k = 1:length(SNR)
     end
     x = x'; t = t';
     idx = (randperm(sample)<=sample*0.7);
-    [~, ssfn_MSE(k)] = ssfn_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
+    [ssfn_MSE(k), elm_MSE(k)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
     
     %% MSE evaluation of MMSE estimator
             
@@ -83,9 +89,11 @@ for k = 1:length(SNR)
     plot(SNR_dB(1:k),optimal_MSE(1:k),'-.rp')
     hold on;grid on;
     plot(SNR_dB(1:k),ssfn_MSE(1:k),'-.bs')
+    hold on;grid on;
+    plot(SNR_dB(1:k),elm_MSE(1:k),'-.gs')
     xlabel('SNR dB');
     ylabel('MSE in dB');
-    legend('Optimal','SSFN')
+    legend('Optimal','SSFN','ELM')
     set(gca,'fontsize',20)
     drawnow
     
