@@ -51,7 +51,18 @@ Zt=W*Xt+B;
 Yt=g(Zt);
 Tt_hat=O*Yt;
 
-train_error=(norm(T_hat-T)^2);
-test_error=(norm(Tt_hat-Tt)^2);
+train_diff = T_hat-T;
+train_norm = zeros(size(train_diff,2),1);
+parfor i=1:size(train_diff,2)
+    train_norm(i) = norm(train_diff(:,i))^2;
+end
+train_error=mean(train_norm);
+
+test_diff = Tt_hat-Tt;
+test_norm = zeros(size(test_diff,2),1);
+parfor i=1:size(test_diff,2)
+    test_norm(i) = norm(test_diff(:,i))^2;
+end
+test_error=mean(test_norm);
 
 return
