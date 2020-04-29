@@ -2,3 +2,4 @@
 .vscode/*
 __pycache__/*
 nlmmse/__pycache__/*
+*.m~

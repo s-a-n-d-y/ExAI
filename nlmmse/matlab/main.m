@@ -6,7 +6,7 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'b';
+experiment = 'd';
 switch experiment
     case 'a'
         a = logspace(0,3,20); % scaling parameters
@@ -23,14 +23,15 @@ switch experiment
         p = 10*ones(1,len); %dimension of observation x
         
     case 'c'
-        p = 1:2:81; %dimension of observation x, we are interested in p/q
+        p = 5:5:60; %dimension of observation x, we are interested in p/q
         len = length(p);
         sample = (1e3/4)*ones(1,len);
         a = 5*ones(1,len);
         b = 1*ones(1,len);
+        % q = 10;
         
     case 'd'
-        sample = 1e3:3e3:31e3;
+        sample = 1e2:1e3/2:10.1e3;
         len = length(sample);
         a = 5*ones(1,len);
         b = 1*ones(1,len);
@@ -53,8 +54,8 @@ for i=1:M
     Cm(:,:,i) = eye(q); %
 end
 alpha = (1/M)*ones(M,1); %mixing proportions
-Monte_Carlo = 500; % No.of simulations for evaluating optimal MSE
-Monte_Carlo_ml_est = 25; % No.of simulations for generating ranfom H
+Monte_Carlo = 1000; % No.of simulations for evaluating optimal MSE
+Monte_Carlo_ml_est = 100; % No.of simulations for generating ranfom H
 
 %% MSE evaluation of SSFN and ELM
 ssfn_MSE = zeros(len,1);

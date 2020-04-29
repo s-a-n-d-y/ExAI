@@ -27,7 +27,7 @@ Delta=nmax;
 %[X_train,T_train,X_test,T_test]=Load_dataset(Database_name);
 
 Q=size(T_train,1);  %   Target Dimension
-trialNum=10;
+trialNum=1; %Monte carlo for SSFN parameters, we can skip it
 
 % The perfomance measures we are interested in
 train_err_SSFN=zeros(1,trialNum);
