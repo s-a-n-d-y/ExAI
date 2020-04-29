@@ -58,8 +58,8 @@ for i=1:M
     Cm(:,:,i) = eye(q); %
 end
 alpha = (1/M)*ones(M,1); %mixing proportions
-Monte_Carlo = 1000; % No.of simulations for evaluating optimal MSE
-Monte_Carlo_ml_est = 100; % No.of simulations for generating ranfom H
+Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
+Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
 
 %% MSE evaluation of SSFN and ELM
 ssfn_MSE = zeros(len,1);
@@ -70,7 +70,7 @@ for k = 1:len
     gm = gmdistribution(mu_m',Cm,alpha); % Gaussian mixture model
     %% Data generation for SSFN and ELM
     t = random(gm,sample(k)); % draw random signals from GMM
-    parfor iter = 1:Monte_Carlo_ml_est   
+    parfor iter = 1:Monte_Carlo_H   
         H = randn(p(k),q);
         H = normc(H);
         x = zeros(p(k),sample(k));
@@ -82,12 +82,12 @@ for k = 1:len
         idx = (randperm(sample(k))<=sample(k)*0.7);
         [ssfn_SE(iter), elm_SE(iter)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
     end
-    ssfn_MSE(k) = 10*log10(sum(ssfn_SE)/Monte_Carlo_ml_est);
-    elm_MSE(k) = 10*log10(sum(elm_SE)/Monte_Carlo_ml_est);
+    ssfn_MSE(k) = 10*log10(sum(ssfn_SE)/Monte_Carlo_H);
+    elm_MSE(k) = 10*log10(sum(elm_SE)/Monte_Carlo_H);
     %% MSE evaluation of MMSE estimator
     
-    t = random(gm,Monte_Carlo);
-    parfor iter = 1:Monte_Carlo
+    t = random(gm,Monte_Carlo_MMSE);
+    parfor iter = 1:Monte_Carlo_MMSE
         H = randn(p(k),q);
         H = normc(H);
         n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
@@ -111,7 +111,7 @@ for k = 1:len
         S_hat = t1;
         SE(iter) = norm(t(iter,:)'-S_hat)^2;
     end
-    optimal_MSE(k) = 10*log10(sum(SE)/Monte_Carlo);
+    optimal_MSE(k) = 10*log10(sum(SE)/Monte_Carlo_MMSE);
     
     switch experiment
         case 'a'
@@ -141,6 +141,12 @@ for k = 1:len
     ylabel('MSE in dB');
     legend('Optimal','SSFN','ELM')
     set(gca,'fontsize',20)
+    
+    title({
+    ['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)] 
+    ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]
+    });
+    
     drawnow
     
 end
