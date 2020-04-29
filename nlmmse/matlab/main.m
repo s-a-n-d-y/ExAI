@@ -14,6 +14,8 @@ switch experiment
         b = 50*ones(1,len);
         sample = 3e3*ones(1,len); % number of data points
         p = 10*ones(1,len); %dimension of observation x
+        q = 10; % Dimension of data t
+        M = 40; % number of Gaussian mixtures
     
     case 'b'
         b = logspace(3,-4,20);
@@ -21,6 +23,8 @@ switch experiment
         a = 1*ones(1,len);
         sample = 3e3*ones(1,len);
         p = 10*ones(1,len); %dimension of observation x
+        q = 10; % Dimension of data t
+        M = 40; % number of Gaussian mixtures
         
     case 'c'
         p = 5:5:60; %dimension of observation x, we are interested in p/q
@@ -28,7 +32,8 @@ switch experiment
         sample = (1e3/4)*ones(1,len);
         a = 5*ones(1,len);
         b = 1*ones(1,len);
-        % q = 10;
+        q = 20; % Dimension of data t
+        M = 40; % number of Gaussian mixtures
         
     case 'd'
         sample = 1e2:1e3/2:10.1e3;
@@ -36,12 +41,11 @@ switch experiment
         a = 5*ones(1,len);
         b = 1*ones(1,len);
         p = 10*ones(1,len); %dimension of observation x
+        q = 10; % Dimension of data t
+        M = 40; % number of Gaussian mixtures
 end
 
 %% Gaussian mixture model generation
-M = 40; % number of Gaussian mixtures
-% p = 10; %dimension of observation x
-q = 10; % Dimension of data t
 mu = randn(q,M); % Generating random mean vectors
 mu = normc(mu); %Normalize columns of mu_m to have unit norm
 T = sum(mu,2);
