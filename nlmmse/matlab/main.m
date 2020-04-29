@@ -6,12 +6,12 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'c';
+experiment = 'a';
 switch experiment
     case 'a'
-        a = 0:4:100; % scaling parameters
+        a = logspace(0,3,20); % scaling parameters
         len = length(a);
-        b = 10*ones(1,len);
+        b = 50*ones(1,len);
         sample = 3e3*ones(1,len); % number of data points
         p = 10*ones(1,len); %dimension of observation x
     
@@ -41,9 +41,9 @@ end
 M = 40; % number of Gaussian mixtures
 % p = 10; %dimension of observation x
 q = 10; % Dimension of data t
-mu_m = randn(q,M); % Generating random mean vectors
-mu_m = normc(mu_m); %Normalize columns of mu_m to have unit norm
-T = sum(mu_m,2);
+mu = randn(q,M); % Generating random mean vectors
+mu = normc(mu); %Normalize columns of mu_m to have unit norm
+T = sum(mu,2);
 SNR = (1./b).*(q+a.^2-(a./M).^2.*trace(T*T')); % SNR based on different scaling parameters a
 SNR_dB = 10.*log10(SNR);
 Cm = zeros(q,q,M);
@@ -53,7 +53,7 @@ for i=1:M
     Cm(:,:,i) = eye(q); %
 end
 alpha = (1/M)*ones(M,1); %mixing proportions
-Monte_Carlo = 300; % No.of simulations for evaluating optimal MSE
+Monte_Carlo = 500; % No.of simulations for evaluating optimal MSE
 Monte_Carlo_ml_est = 25; % No.of simulations for generating ranfom H
 
 %% MSE evaluation of SSFN and ELM
@@ -61,8 +61,8 @@ ssfn_MSE = zeros(len,1);
 elm_MSE = zeros(len,1);
 optimal_MSE = zeros(len,1);
 for k = 1:len
-    mu = a(k)*mu_m; % mean with scaling parameter a(k)
-    gm = gmdistribution(mu',Cm,alpha); % Gaussian mixture model
+    mu_m = a(k)*mu; % mean with scaling parameter a(k)
+    gm = gmdistribution(mu_m',Cm,alpha); % Gaussian mixture model
     %% Data generation for SSFN and ELM
     t = random(gm,sample(k)); % draw random signals from GMM
     parfor iter = 1:Monte_Carlo_ml_est   
