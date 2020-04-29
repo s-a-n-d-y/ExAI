@@ -6,7 +6,7 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'a';
+experiment = 'b';
 switch experiment
     case 'a'
         a = logspace(0,3,20); % scaling parameters
