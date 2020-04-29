@@ -6,30 +6,40 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'a';
+experiment = 'c';
 switch experiment
     case 'a'
         a = 0:4:100; % scaling parameters
         len = length(a);
         b = 10*ones(1,len);
-        sample = 3e3*ones(1,len); % number of data points     
+        sample = 3e3*ones(1,len); % number of data points
+        p = 10*ones(1,len); %dimension of observation x
     
     case 'b'
         b = logspace(3,-4,20);
         len = length(b);
         a = 1*ones(1,len);
         sample = 3e3*ones(1,len);
+        p = 10*ones(1,len); %dimension of observation x
+        
+    case 'c'
+        p = 1:2:81; %dimension of observation x, we are interested in p/q
+        len = length(p);
+        sample = (1e3/4)*ones(1,len);
+        a = 5*ones(1,len);
+        b = 1*ones(1,len);
         
     case 'd'
         sample = 1e3:3e3:31e3;
         len = length(sample);
         a = 5*ones(1,len);
-        b = 1*ones(1,len);       
+        b = 1*ones(1,len);
+        p = 10*ones(1,len); %dimension of observation x
 end
 
 %% Gaussian mixture model generation
 M = 40; % number of Gaussian mixtures
-p = 10; %dimension of observation x
+% p = 10; %dimension of observation x
 q = 10; % Dimension of data t
 mu_m = randn(q,M); % Generating random mean vectors
 mu_m = normc(mu_m); %Normalize columns of mu_m to have unit norm
@@ -44,8 +54,8 @@ for i=1:M
 end
 alpha = (1/M)*ones(M,1); %mixing proportions
 Monte_Carlo = 300; % No.of simulations for evaluating optimal MSE
-H = randn(p,q);
-H = normc(H);
+Monte_Carlo_ml_est = 25; % No.of simulations for generating ranfom H
+
 %% MSE evaluation of SSFN and ELM
 ssfn_MSE = zeros(len,1);
 elm_MSE = zeros(len,1);
@@ -53,39 +63,39 @@ optimal_MSE = zeros(len,1);
 for k = 1:len
     mu = a(k)*mu_m; % mean with scaling parameter a(k)
     gm = gmdistribution(mu',Cm,alpha); % Gaussian mixture model
-    %% Data generation for SSFN
-    
+    %% Data generation for SSFN and ELM
     t = random(gm,sample(k)); % draw random signals from GMM
-    t = t';
-    H = randn(p,q);
-    H = normc(H);
-    x = zeros(p,sample(k));
-    for i=1:sample(k)
-        n = sqrt(b(k)/p)*randn(p,1); %Zero mean Gaussian noise samples
-        x(:,i) = H*t(:,i) + n; % noisy signal generation
+    parfor iter = 1:Monte_Carlo_ml_est   
+        H = randn(p(k),q);
+        H = normc(H);
+        x = zeros(p(k),sample(k));
+        for i=1:sample(k)
+            n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
+            x(:,i) = H*t(i,:)' + n; % noisy signal generation
+        end
+        x = x';
+        idx = (randperm(sample(k))<=sample(k)*0.7);
+        [ssfn_SE(iter), elm_SE(iter)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
     end
-    x = x'; t = t';
-    idx = (randperm(sample(k))<=sample(k)*0.7);
-    [ssfn_MSE(k), elm_MSE(k)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
-    
+    ssfn_MSE(k) = 10*log10(sum(ssfn_SE)/Monte_Carlo_ml_est);
+    elm_MSE(k) = 10*log10(sum(elm_SE)/Monte_Carlo_ml_est);
     %% MSE evaluation of MMSE estimator
     
     t = random(gm,Monte_Carlo);
-    t = t';
     parfor iter = 1:Monte_Carlo
-        H = randn(p,q);
+        H = randn(p(k),q);
         H = normc(H);
-        n = sqrt(b(k)/p)*randn(p,1); %Zero mean Gaussian noise samples
+        n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
         
-        x = H*t(:,iter) + n;
-        Cn = (b(k)/p)*eye(p);
-        mu_n = zeros(p,1);
-        Mat = zeros(p,p,M);
+        x = H*t(iter,:)' + n;
+        Cn = (b(k)/p(k))*eye(p(k));
+        mu_n = zeros(p(k),1);
+        Mat = zeros(p(k),p(k),M);
         tmp = zeros(M,1);
         total = 0;
         for m=1:M
             Mat(:,:,m) = H*Cm(:,:,m)*H' + Cn;
-            tmp(m) = alpha(m)*(2*pi)^(-p/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
+            tmp(m) = alpha(m)*(2*pi)^(-p(k)/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
             total = total + tmp(m);
         end
         t1=0;
@@ -94,7 +104,7 @@ for k = 1:len
             t1 = t1 + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
         end
         S_hat = t1;
-        SE(iter) = norm(t(:,iter)-S_hat)^2;
+        SE(iter) = norm(t(iter,:)'-S_hat)^2;
     end
     optimal_MSE(k) = 10*log10(sum(SE)/Monte_Carlo);
     
@@ -106,7 +116,11 @@ for k = 1:len
         case 'b'
             data = SNR_dB(1:k);
             x_label = 'SNR dB';
+            
         case 'c'
+            data = p(1:k);
+            x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+            
         case 'd'
             data = sample(1:k);
             x_label = 'Size of dataset';

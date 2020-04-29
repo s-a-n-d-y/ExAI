@@ -63,3 +63,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    '''
+    https://colab.research.google.com/drive/1Eb-G95_dd3XJ-0hm2qDqdtqMugLkSYE8#forceEdit=true&sandboxMode=true&scrollTo=DrsHNw9L5fHc
+    https://stackoverflow.com/questions/57937185/how-can-i-create-a-random-variables-samples-from-gaussian-mixture-in-python
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.multivariate_normal.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_spd_matrix.html
+    '''

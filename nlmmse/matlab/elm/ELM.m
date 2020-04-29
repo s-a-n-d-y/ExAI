@@ -51,7 +51,7 @@ Zt=W*Xt+B;
 Yt=g(Zt);
 Tt_hat=O*Yt;
 
-train_error=10*log10(norm(T_hat-T)^2);
-test_error=10*log10(norm(Tt_hat-Tt)^2);
+train_error=(norm(T_hat-T)^2);
+test_error=(norm(Tt_hat-Tt)^2);
 
 return
