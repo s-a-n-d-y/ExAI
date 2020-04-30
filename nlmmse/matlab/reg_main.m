@@ -6,52 +6,19 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'b';
-switch experiment
-    case 'a'
-        a = logspace(0,3,20); % scaling parameters
-        len = length(a);
-        b = 50*ones(1,len);
-        sample = 3e3*ones(1,len); % number of data points
-        p = 10*ones(1,len); %dimension of observation x
-        q = 10; % Dimension of data t
-        M = 40; % number of Gaussian mixtures
-        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
-        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
-    
-    case 'b'
-        b = logspace(3,-4,20);
-        len = length(b);
-        a = 10*ones(1,len); %Do with a=1 and a=10
-        sample = 3e3*ones(1,len);
-        p = 10*ones(1,len); %dimension of observation x
-        q = 10; % Dimension of data t
-        M = 40; % number of Gaussian mixtures
-        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
-        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
-        
-    case 'c'
-        p = 5:5:60; %dimension of observation x, we are interested in p/q
-        len = length(p);
-        sample = (1e3/4)*ones(1,len);
-        a = 5*ones(1,len);
-        b = 1*ones(1,len);
-        q = 10; % Dimension of data t
-        M = 40; % number of Gaussian mixtures
-        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
-        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
-        
-    case 'd'
-        sample = 1e2:1e3/2:10.1e3;
-        len = length(sample);
-        a = 5*ones(1,len);
-        b = 1*ones(1,len);
-        p = 10*ones(1,len); %dimension of observation x
-        q = 10; % Dimension of data t
-        M = 40; % number of Gaussian mixtures
-        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
-        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
-end
+experiment = 'ra';
+config = get_config(experiment);
+
+a = config.a; % Mean scaling
+len = config.len; %No of experiments
+b = config.b; % Noise power
+sample = config.sample; % number of data points
+p = config.p; %dimension of observation x
+q = config.q; % Dimension of data t
+M = config.M; % number of Gaussian mixtures
+Monte_Carlo_NMSE = config.Monte_Carlo_NMSE; % No.of simulations for evaluating optimal NMSE
+Monte_Carlo_H = config.Monte_Carlo_H; % No.of simulations for generating ranfom H
+
 
 %% Gaussian mixture model generation
 mu = randn(q,M); % Generating random mean vectors
@@ -94,8 +61,8 @@ for k = 1:len
     elm__normalized_MSE(k) = 10*log10((sum(elm_SE)/Monte_Carlo_H)/sig_pow(k));
     %% MSE evaluation of MMSE estimator
     
-    t = random(gm,Monte_Carlo_MMSE);
-    parfor iter = 1:Monte_Carlo_MMSE
+    t = random(gm,Monte_Carlo_NMSE);
+    parfor iter = 1:Monte_Carlo_NMSE
         H = randn(p(k),q);
         H = normc(H);
         n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples  
@@ -117,22 +84,22 @@ for k = 1:len
         end
         SE(iter) = norm(t(iter,:)'-t_hat)^2;
     end
-    normalized_MSE(k) = 10*log10((sum(SE)/Monte_Carlo_MMSE)/sig_pow(k));
+    normalized_MSE(k) = 10*log10((sum(SE)/Monte_Carlo_NMSE)/sig_pow(k));
     
     switch experiment
-        case 'a'
+        case 'ra'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             
-        case 'b'
+        case 'rb'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             
-        case 'c'
+        case 'rc'
             data = p(1:k);
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
             
-        case 'd'
+        case 'rd'
             data = sample(1:k);
             x_label = 'Size of dataset';
     end
