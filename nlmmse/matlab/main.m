@@ -6,7 +6,7 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'd';
+experiment = 'b';
 switch experiment
     case 'a'
         a = logspace(0,3,20); % scaling parameters
@@ -16,15 +16,19 @@ switch experiment
         p = 10*ones(1,len); %dimension of observation x
         q = 10; % Dimension of data t
         M = 40; % number of Gaussian mixtures
+        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
+        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
     
     case 'b'
         b = logspace(3,-4,20);
         len = length(b);
-        a = 1*ones(1,len);
+        a = 10*ones(1,len); %Do with a=1 and a=10
         sample = 3e3*ones(1,len);
         p = 10*ones(1,len); %dimension of observation x
         q = 10; % Dimension of data t
         M = 40; % number of Gaussian mixtures
+        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
+        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         
     case 'c'
         p = 5:5:60; %dimension of observation x, we are interested in p/q
@@ -32,8 +36,10 @@ switch experiment
         sample = (1e3/4)*ones(1,len);
         a = 5*ones(1,len);
         b = 1*ones(1,len);
-        q = 20; % Dimension of data t
+        q = 10; % Dimension of data t
         M = 40; % number of Gaussian mixtures
+        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
+        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         
     case 'd'
         sample = 1e2:1e3/2:10.1e3;
@@ -43,13 +49,18 @@ switch experiment
         p = 10*ones(1,len); %dimension of observation x
         q = 10; % Dimension of data t
         M = 40; % number of Gaussian mixtures
+        Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
+        Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
 end
 
 %% Gaussian mixture model generation
 mu = randn(q,M); % Generating random mean vectors
 mu = normc(mu); %Normalize columns of mu_m to have unit norm
+alpha = (1/M)*ones(M,1); %mixing proportions
 T = sum(mu,2);
-SNR = (1./b).*(q+a.^2-(a./M).^2.*trace(T*T')); % SNR based on different scaling parameters a
+sig_pow = (q+a.^2-(a./M).^2.*trace(T*T'));
+noise_pow = b;
+SNR = (1./noise_pow).*sig_pow; % SNR based on different scaling parameters a
 SNR_dB = 10.*log10(SNR);
 Cm = zeros(q,q,M);
 for i=1:M
@@ -57,14 +68,11 @@ for i=1:M
     %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
     Cm(:,:,i) = eye(q); %
 end
-alpha = (1/M)*ones(M,1); %mixing proportions
-Monte_Carlo_MMSE = 1000; % No.of simulations for evaluating optimal MSE
-Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
 
 %% MSE evaluation of SSFN and ELM
-ssfn_MSE = zeros(len,1);
-elm_MSE = zeros(len,1);
-optimal_MSE = zeros(len,1);
+ssfn_normalized_MSE = zeros(len,1);
+elm__normalized_MSE = zeros(len,1);
+normalized_MSE = zeros(len,1);
 for k = 1:len
     mu_m = a(k)*mu; % mean with scaling parameter a(k)
     gm = gmdistribution(mu_m',Cm,alpha); % Gaussian mixture model
@@ -82,17 +90,16 @@ for k = 1:len
         idx = (randperm(sample(k))<=sample(k)*0.7);
         [ssfn_SE(iter), elm_SE(iter)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
     end
-    ssfn_MSE(k) = 10*log10(sum(ssfn_SE)/Monte_Carlo_H);
-    elm_MSE(k) = 10*log10(sum(elm_SE)/Monte_Carlo_H);
+    ssfn_normalized_MSE(k) = 10*log10((sum(ssfn_SE)/Monte_Carlo_H)/sig_pow(k));
+    elm__normalized_MSE(k) = 10*log10((sum(elm_SE)/Monte_Carlo_H)/sig_pow(k));
     %% MSE evaluation of MMSE estimator
     
     t = random(gm,Monte_Carlo_MMSE);
     parfor iter = 1:Monte_Carlo_MMSE
         H = randn(p(k),q);
         H = normc(H);
-        n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
-        
-        x = H*t(iter,:)' + n;
+        n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples  
+        x = H*t(iter,:)' + n; %Observation generation
         Cn = (b(k)/p(k))*eye(p(k));
         mu_n = zeros(p(k),1);
         Mat = zeros(p(k),p(k),M);
@@ -103,24 +110,23 @@ for k = 1:len
             tmp(m) = alpha(m)*(2*pi)^(-p(k)/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
             total = total + tmp(m);
         end
-        t1=0;
+        t_hat=0;
         for m = 1:M
             beta_m_X = tmp(m)/total;
-            t1 = t1 + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
+            t_hat = t_hat + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
         end
-        S_hat = t1;
-        SE(iter) = norm(t(iter,:)'-S_hat)^2;
+        SE(iter) = norm(t(iter,:)'-t_hat)^2;
     end
-    optimal_MSE(k) = 10*log10(sum(SE)/Monte_Carlo_MMSE);
+    normalized_MSE(k) = 10*log10((sum(SE)/Monte_Carlo_MMSE)/sig_pow(k));
     
     switch experiment
         case 'a'
             data = SNR_dB(1:k);
-            x_label = 'SNR dB';
+            x_label = 'SNR (dB)';
             
         case 'b'
             data = SNR_dB(1:k);
-            x_label = 'SNR dB';
+            x_label = 'SNR (dB)';
             
         case 'c'
             data = p(1:k);
@@ -131,14 +137,14 @@ for k = 1:len
             x_label = 'Size of dataset';
     end
     
-    plot(data,optimal_MSE(1:k),'-.rp')
+    plot(data,normalized_MSE(1:k),'-.rp')
     hold on;grid on;
-    plot(data,ssfn_MSE(1:k),'-.bs')
+    plot(data,ssfn_normalized_MSE(1:k),'-.bs')
     hold on;grid on;
-    plot(data,elm_MSE(1:k),'-.gs')
+    plot(data,elm__normalized_MSE(1:k),'-.gs')
     
     xlabel(x_label);
-    ylabel('MSE in dB');
+    ylabel('NMSE (dB)');
     legend('Optimal','SSFN','ELM')
     set(gca,'fontsize',20)
     
