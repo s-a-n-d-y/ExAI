@@ -1,98 +1,133 @@
 close all;clear;clc;
 tic;
-experiment = 'a';
-switch experiment
-    case 'a'
-        a = logspace(0,3,20);
-        b = 50*ones(1,length(a));
-    case 'b'
-        b = logspace(2,-3,20);
-        a = 5*ones(1,length(b));
-end
+
+%% Plotting properties as latex
+set(groot,'defaulttextinterpreter','latex');
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+experiment = 'ca';
+config = get_config(experiment);
+
+a = config.a; % Mean scaling
+len = config.len; %No of experiments
+b = config.b; % Noise power
+p = config.p; %dimension of observation x
+q = config.q; % Dimension of data t
+M = config.M; % number of Gaussian mixtures
+alpha = config.alpha; % Mixing proportion probability
+sample = config.sample; % number of data points in each mixture
+Monte_Carlo_H = config.Monte_Carlo_H; % No.of simulations for generating ranfom H
+
 
 %% Gaussian mixture model generation
-M = 20; % number of Gaussian mixtures
-p = 10; %dimension of observation x
-q = 10; % Dimension of data t
-mu_m1 = randn(q,M); % Generating random mean vectors
-mu_m1 = normc(mu_m1); %Normalize columns of mu_m to have unit norm
-T = sum(mu_m1,2);
-SP = q+a.^2-(a./M).^2.*trace(T*T'); % signal power
-SNR = (1./b).*(q+a.^2-(a./M).^2.*trace(T*T')); % SNR based on different scaling parameters a
+mu = randn(q,M); % Generating random mean vectors
+mu = normc(mu); %Normalize columns of mu_m to have unit norm
+T = sum(mu,2);
+sig_pow = (q+a.^2-(a./M).^2.*trace(T*T'));
+noise_pow = b;
+SNR = (1./noise_pow).*sig_pow; % SNR based on different scaling parameters 'a'
 SNR_dB = 10.*log10(SNR);
 Cm = zeros(q,q,M);
+%t = zeros(sum(sample),q);
 for i=1:M
+    %C = sqrt(0.01)*randn(p);
+    %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
     Cm(:,:,i) = eye(q); %
 end
-alpha = (1/M)*ones(M,1); %mixing proportions
-nSamples = 1000; % No.of simulations for evaluating optimal MSE
-H = randn(p,q);
-H = normc(H);
-%% MSE evaluation of SSFN
-ssfn_MSE = zeros(length(SNR),1);
-optimal_MSE = zeros(length(SNR),1);
-Accuracy = zeros(length(SNR),1);
-for k = 1:length(SNR)
-    mu_m = a(k)*mu_m1; % mean with scaling parameter a(k)
-    
-    %% Optimal classifier
+
+%% CE evaluation of optimal estimator
+mean_CE = zeros(len,1);
+mean_ssfn_CE = zeros(len,1);
+mean_elm_CE = zeros(len,1);
+
+for k = 1:len
+    %% Sample data generation
+    n_samples = sum(sample);
+    m_star = zeros(n_samples,1);
+    mu_m = a(k)*mu; % mean with scaling parameter a(k)
     m_true = [];
-    %sample_per_class = zeros(M,1);
-    for m=1:length(alpha)
-        sample_per_class(m) = alpha(m)*nSamples                                                                    ;
-        m_true = [m_true; m*ones(sample_per_class(m),1)];
-    end
-    % Signal Generation
     t = [];
     for m=1:M
-        data = mvnrnd(mu_m(:,m)',Cm(:,:,m),sample_per_class(m));
+        data = mvnrnd(mu_m(:,m)', Cm(:,:,m), sample(m));
+        m_true = [m_true; m*ones(sample(m),1)];
         t = [t, data'];
     end
-    m_star = zeros(nSamples,1);
-    for iter = 1:nSamples
-        H = randn(p,q);
-        H = normc(H);
-        n = sqrt(b(k)/p)*randn(p,1);
-        x = H*t(:,iter) + n; %noisy signal
-        Cn = (b(k)/p)*eye(p);
-        mu_n = zeros(p,1);
-        Mat = zeros(p,p,M);
-        tmp = zeros(M,1);
-        total = 0;
+    
+    %% Evaluation for SSFN and ELM
+    parfor iter = 1:Monte_Carlo_H
+        y = zeros(M,1);
+        H = randn(p(k),q);
+        H = normc(H);        
+        x = zeros(p(k),n_samples);
+        for i=1:n_samples
+            n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
+            x(:,i) = H*t(:,i) + n; % noisy signal generation
+        end
         
-        for m=1:M
-            Mat(:,:,m) = H*Cm(:,:,m)*H' + Cn;
-            tmp(m) = alpha(m)*(2*pi)^(-p/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
-            total = total + tmp(m);
-        end
-        t1=0;
-        for m = 1:M
-            beta_m_X = tmp(m)/total;
-            t1 = t1 + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
-        end
-        t_hat = t1;
-                        
+        x = x';
+        idx = (randperm(n_samples)<=n_samples*0.7);
+        [~, ~, ssfn_acc(iter), elm_acc(iter)] = ml_estimator(x(idx,:)',t(:,idx),x(~idx,:)',t(:,~idx));
+    end
+    mean_ssfn_CE(k) = sum(ssfn_acc)/Monte_Carlo_H;
+    mean_elm_CE(k) = sum(elm_acc)/Monte_Carlo_H;
+    
+    %% Monte Carlo for H, by drawing one sample at a time
+    parfor iter = 1:n_samples
+        y = zeros(M,1);
+        H = randn(p(k),q);
+        H = normc(H);
+        n = sqrt(b(k)/p(k))*randn(p(k),1);
+        x = H*t(:,iter) + n; %noisy signal
+        Cn = (b(k)/p(k))*eye(p(k));
+        mu_n = zeros(p(k),1);
         for m =1:M
-            MU = mu_m(:,m);
-            SIGMA = Cm(:,:,m);
-            y(m) = alpha(m)*mvnpdf(t_hat,MU,SIGMA);
+            MU = [H, eye(p(k))]*[mu_m(:,m); mu_n];
+            SIGMA = [H, eye(p(k))]*[Cm(:,:,m), zeros(q,p(k));zeros(p(k),q), Cn]*[H, eye(p(k))]';
+            y(m) = alpha(m)*mvnpdf(x,MU,SIGMA);
         end
         [~, m_star(iter)] = max(y);
     end
-    %%
-    [~,temp] = find(m_star==m_true);
-    Accuracy(k) = sum(temp)/nSamples;
-    %%
-    grid on;
-    plot(SNR_dB(1:k),Accuracy(1:k),'-.bp')
-    hold on;
-    %plot(SNR_dB(1:k),ssfn_MSE(1:k),'-.bs')
-    xlabel('SNR dB');
+    
+    [~,count] = find(m_star==m_true);
+    mean_CE(k) = sum(count)/n_samples;
+     
+    switch experiment
+        case 'ca'
+            data = SNR_dB(1:k);
+            x_label = 'SNR (dB)';
+            
+        case 'cb'
+            data = SNR_dB(1:k);
+            x_label = 'SNR (dB)';
+            
+        case 'cc'
+            data = p(1:k);
+            x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+            
+        case 'cd'
+            data = sample(1:k);
+            x_label = 'Size of dataset';
+    end
+    
+    plot(data,mean_CE(1:k),'-.rp')
+    hold on;grid on;
+    plot(data,mean_ssfn_CE(1:k),'-.bs')
+    hold on;grid on;
+    plot(data,mean_elm_CE(1:k),'-.gs')
+    
+    xlabel(x_label);
     ylabel('Accuracy');
-    legend('Optimal Classifier')
+    legend('Optimal','SSFN','ELM')
     set(gca,'fontsize',20)
+    
+    title({
+        ['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+        ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]
+        });
+    
     drawnow
-    %%
+    
 end
 
 %% Plot
