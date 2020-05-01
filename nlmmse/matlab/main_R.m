@@ -1,4 +1,6 @@
-close all;clear;clc;
+% Test with following value
+% experiment = 'ra';
+function main_R(experiment)
 tic;
 
 %% Plotting properties as latex
@@ -6,7 +8,10 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'ra';
+fig = figure('Units','inches',...
+'Position',[0 0 7 4],...
+'PaperPositionMode','auto');
+
 config = get_config(experiment);
 
 a = config.a; % Mean scaling
@@ -88,38 +93,59 @@ for k = 1:len
         case 'ra'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
-            
-        case 'rb'
+            file_name = 'mmse_1';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['b = ' num2str(b(k))]};
+            xlim([-8 33])
+            ylim([-25 5])
+
+                      
+        case 'rb_a_1'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
+            file_name = 'mmse_2_a_1';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['a = ' num2str(a(k))]};
+            xlim([-10 33])
+            ylim([-25 5])
+            
+        case 'rb_a_10'
+            data = SNR_dB(1:k);
+            x_label = 'SNR (dB)';
+            file_name = 'mmse_2_a_10';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['a = ' num2str(a(k))]};
+            xlim([-10 33])
+            ylim([-25 5])
             
         case 'rc'
             data = p(1:k);
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+            file_name = 'mmse_3';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', Q = ' num2str(q)]
+                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+            xlim([0 60])
+            ylim([-25 5])
             
         case 'rd'
             data = sample(1:k);
             x_label = 'Size of dataset';
+            file_name = 'mmse_4';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+            xlim([0 10000])
+            ylim([-25 5])
+            
     end
     
-    plot(data,normalized_MSE(1:k),'-.rp')
+    plot(data,normalized_MSE(1:k),'-.rp','MarkerSize',2)
     hold on;grid on;
-    plot(data,ssfn_normalized_MSE(1:k),'-.bs')
+    plot(data,ssfn_normalized_MSE(1:k),'-.bs','MarkerSize',2)
     hold on;grid on;
-    plot(data,elm_normalized_MSE(1:k),'-.gs')
-    
-    xlabel(x_label);
-    ylabel('NMSE (dB)');
-    legend('Optimal','SSFN','ELM')
-    set(gca,'fontsize',20)
-    
-    title({
-    ['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)] 
-    ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]
-    });
-    
-    drawnow
-    
+    plot(data,elm_normalized_MSE(1:k),'-.gs','MarkerSize',2)
+    legend_label = {'Optimal' 'SSFN' 'ELM'};
+    y_label = 'NMSE (dB)';
+    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name);
 end
 
 %% Plot
@@ -135,3 +161,4 @@ end
 % set(gca,'fontsize',20)
 
 toc;
+close all;clear;clc;

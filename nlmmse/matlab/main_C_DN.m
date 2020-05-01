@@ -1,4 +1,7 @@
-close all;clear;clc;
+% Test with following value
+% experiment = 'cda';
+function main_C_DN(experiment)
+
 tic;
 
 %% Plotting properties as latex
@@ -6,7 +9,10 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
-experiment = 'ca';
+fig = figure('Units','inches',...
+    'Position',[0 0 7 4],...
+    'PaperPositionMode','auto');
+
 config = get_config(experiment);
 
 a = config.a; % Mean scaling
@@ -61,7 +67,7 @@ for k = 1:len
     parfor iter = 1:Monte_Carlo_H
         y = zeros(M,1);
         H = randn(p(k),q);
-        H = normc(H);        
+        H = normc(H);
         n = sqrt(b(k)/p(k))*randn(p(k),n_samples); %Zero mean Gaussian noise samples
         x = H*t + n; % noisy signal generation
         x = x';
@@ -79,7 +85,7 @@ for k = 1:len
         n = sqrt(b(k)/p(k))*randn(p(k),1);
         x = H*t(:,iter) + n; %noisy signal
         Cn = (b(k)/p(k))*eye(p(k));
-        mu_n = zeros(p(k),1); 
+        mu_n = zeros(p(k),1);
         Mat = zeros(p(k),p(k),M);
         tmp = zeros(M,1);
         total = 0;
@@ -93,7 +99,7 @@ for k = 1:len
         for m = 1:M
             beta_m_X = tmp(m)/total;
             t_hat = t_hat + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
-        end        
+        end
         
         for m =1:M
             MU = mu_m(:,m);
@@ -105,42 +111,45 @@ for k = 1:len
     
     [~,count] = find(m_star==m_true);
     mean_CE(k) = sum(count)/n_samples;
-     
+    
     switch experiment
-        case 'ca'
+        case 'cda'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
+            file_name = 'mmse_c_dn_1';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                ['b = ' num2str(b(k))]};
             
-        case 'cb'
+        case 'cdb'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
+            file_name = 'mmse_c_dn_2';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             
-        case 'cc'
+        case 'cdc'
             data = p(1:k);
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+            file_name = 'mmse_c_dn_3';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             
-        case 'cd'
+        case 'cdd'
             data = sample(1:k);
             x_label = 'Size of dataset';
+            file_name = 'mmse_c_dn_4';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
     end
     
-    plot(data,mean_CE(1:k),'-.rp')
+    plot(data,mean_CE(1:k),'-.rp','MarkerSize',2)
     hold on;grid on;
-    plot(data,mean_ssfn_CE(1:k),'-.bs')
+    plot(data,mean_ssfn_CE(1:k),'-.bs','MarkerSize',2)
     hold on;grid on;
-    plot(data,mean_elm_CE(1:k),'-.gs')
-    
-    xlabel(x_label);
-    ylabel('Accuracy');
-    legend('Optimal','SSFN','ELM')
-    set(gca,'fontsize',20)
-    
-    title({
-        ['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-        ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]
-        });
-    
-    drawnow
+    plot(data,mean_elm_CE(1:k),'-.gs','MarkerSize',2)
+    legend_label = {'Optimal' 'SSFN' 'ELM'};
+    y_label = 'Accuracy';
+    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name);
     
 end
 
@@ -157,3 +166,4 @@ end
 % set(gca,'fontsize',20)
 
 toc;
+close all;clear;clc;
