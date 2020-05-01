@@ -45,14 +45,12 @@ for k = 1:len
     gm = gmdistribution(mu_m',Cm,alpha); % Gaussian mixture model
     %% Data generation for SSFN and ELM
     t = random(gm,sample(k)); % draw random signals from GMM
+    x = zeros(p(k),sample(k));
     parfor iter = 1:Monte_Carlo_H   
         H = randn(p(k),q);
         H = normc(H);
-        x = zeros(p(k),sample(k));
-        for i=1:sample(k)
-            n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
-            x(:,i) = H*t(i,:)' + n; % noisy signal generation
-        end
+        n = sqrt(b(k)/p(k))*randn(p(k),sample(k)); %Zero mean Gaussian noise samples
+        x = H*t' + n; % noisy signal generation
         x = x';
         idx = (randperm(sample(k))<=sample(k)*0.7);
         [ssfn_SE(iter), elm_SE(iter), ~, ~] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');

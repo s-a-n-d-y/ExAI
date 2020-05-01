@@ -54,20 +54,19 @@ for k = 1:len
         t = [t, data'];
     end
     
+    onehot = @(X)bsxfun(@eq, X(:), 1:max(X));
+    m_true_onehot = double(onehot(m_true))';
+    
     %% Evaluation for SSFN and ELM
     parfor iter = 1:Monte_Carlo_H
         y = zeros(M,1);
         H = randn(p(k),q);
         H = normc(H);        
-        x = zeros(p(k),n_samples);
-        for i=1:n_samples
-            n = sqrt(b(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples
-            x(:,i) = H*t(:,i) + n; % noisy signal generation
-        end
-        
+        n = sqrt(b(k)/p(k))*randn(p(k),n_samples); %Zero mean Gaussian noise samples
+        x = H*t + n; % noisy signal generation
         x = x';
         idx = (randperm(n_samples)<=n_samples*0.7);
-        [~, ~, ssfn_acc(iter), elm_acc(iter)] = ml_estimator(x(idx,:)',t(:,idx),x(~idx,:)',t(:,~idx));
+        [~, ~, ssfn_acc(iter), elm_acc(iter)] = ml_estimator(x(idx,:)',m_true_onehot(:,idx),x(~idx,:)',m_true_onehot(:,~idx));
     end
     mean_ssfn_CE(k) = sum(ssfn_acc)/Monte_Carlo_H;
     mean_elm_CE(k) = sum(elm_acc)/Monte_Carlo_H;
