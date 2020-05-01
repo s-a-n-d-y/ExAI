@@ -80,11 +80,26 @@ for k = 1:len
         n = sqrt(b(k)/p(k))*randn(p(k),1);
         x = H*t(:,iter) + n; %noisy signal
         Cn = (b(k)/p(k))*eye(p(k));
-        mu_n = zeros(p(k),1);
+        mu_n = zeros(p(k),1); 
+        Mat = zeros(p(k),p(k),M);
+        tmp = zeros(M,1);
+        total = 0;
+        
+        for m=1:M
+            Mat(:,:,m) = H*Cm(:,:,m)*H' + Cn;
+            tmp(m) = alpha(m)*(2*pi)^(-p(k)/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
+            total = total + tmp(m);
+        end
+        t_hat=0;
+        for m = 1:M
+            beta_m_X = tmp(m)/total;
+            t_hat = t_hat + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
+        end        
+        
         for m =1:M
-            MU = [H, eye(p(k))]*[mu_m(:,m); mu_n];
-            SIGMA = [H, eye(p(k))]*[Cm(:,:,m), zeros(q,p(k));zeros(p(k),q), Cn]*[H, eye(p(k))]';
-            y(m) = alpha(m)*mvnpdf(x,MU,SIGMA);
+            MU = mu_m(:,m);
+            SIGMA = Cm(:,:,m);
+            y(m) = alpha(m)*mvnpdf(t_hat,MU,SIGMA);
         end
         [~, m_star(iter)] = max(y);
     end

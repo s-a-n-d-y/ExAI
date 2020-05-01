@@ -56,7 +56,6 @@ switch lower(caseString)
         config.p = 5*ones(1,config.len); %dimension of observation x
         config.q = 10; % Dimension of data t
         config.M = 40; % number of Gaussian mixtures
-        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         % This sets size of samples drawn from each Gaussian
         % 1<=n_diff_alpha<=M
         % 1 = Makes all blobs having same alpha and hence same size
@@ -65,6 +64,7 @@ switch lower(caseString)
         count = randi([1,n_diff_alpha],config.M,1); %mixing proportions
         config.alpha = count/sum(count);
         config.sample = round(1e3*config.alpha); % number of data points converted to nearest integer
+        config.Monte_Carlo_H = 20; % No.of simulations for generating ranfom H
         
     case 'cda'
         config.a = logspace(0,3,20); % scaling parameters
@@ -73,7 +73,6 @@ switch lower(caseString)
         config.p = 5*ones(1,config.len); %dimension of observation x
         config.q = 10; % Dimension of data t
         config.M = 40; % number of Gaussian mixtures
-        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         % This sets size of samples drawn from each Gaussian
         % 1<=n_diff_alpha<=M
         % 1 = Makes all blobs having same alpha and hence same size
@@ -82,6 +81,7 @@ switch lower(caseString)
         count = randi([1,n_diff_alpha],config.M,1); %mixing proportions
         config.alpha = count/sum(count);
         config.sample = round(1e3*config.alpha); % number of data points converted to nearest integer
+        config.Monte_Carlo_H = 20; % No.of simulations for generating ranfom H
 end
 end
 
