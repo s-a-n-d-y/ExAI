@@ -1,5 +1,5 @@
 
-function [ssfn_mean_test_err, elm_mean_test_err] = ml_estimator(X_train,T_train,X_test,T_test)
+function [ssfn_mean_test_err, elm_mean_test_err, ssfn_mean_test_accuracy, elm_mean_test_accuracy] = ml_estimator(X_train,T_train,X_test,T_test)
 addpath(genpath('ssfn/Datasets'), genpath('ssfn/Functions'), genpath('elm'));
 
 
@@ -32,10 +32,13 @@ trialNum=1; %Monte carlo for SSFN parameters, we can skip it
 % The perfomance measures we are interested in
 train_err_SSFN=zeros(1,trialNum);
 test_err_SSFN=zeros(1,trialNum);
+train_accuracy_ssfn = zeros(1,trialNum);
+test_accuracy_ssfn = zeros(1,trialNum);
 
 train_err_ELM=zeros(1,trialNum);
 test_err_ELM=zeros(1,trialNum);
-
+train_accuracy_elm=zeros(1,trialNum);
+test_accuracy_elm=zeros(1,trialNum);
 %   Generating the set of nodes in each layer
 NumNodes_min=2*Q;
 NumNodes_max=2*Q+nmax;
@@ -56,25 +59,37 @@ parfor i=1:trialNum
     % Loading the dataset each time to reduce the effect of random partitioning in some of the datasets
     % [X_train,T_train,X_test,T_test]=Load_dataset(Database_name);
     
-    [train_error_ssfn, test_error_ssfn, ~, ~, ~, ~]=SSFN(X_train, T_train,...
+    [train_error_ssfn, test_error_ssfn, train_acc_ssfn, test_acc_ssfn, ~, ~]=SSFN(X_train, T_train,...
         X_test,T_test, g, NumNodes_opt', eps_o, mu, kmax, lam, eta_n, eta_l, First_Block);
     
     train_err_SSFN(i) = train_error_ssfn(end);
     test_err_SSFN(i) = test_error_ssfn(end);
+    train_accuracy_ssfn(i) = train_acc_ssfn(end);
+    test_accuracy_ssfn(i) = test_acc_ssfn(end);
     
     % ELM estimator
-    [~, ~, train_error_elm, test_error_elm]=ELM(X_train, T_train, X_test, T_test, lam, (2*Q+nmax));
+    [~, ~, train_error_elm, test_error_elm, train_acc_elm, test_acc_elm]=ELM(X_train, T_train, X_test, T_test, lam, (2*Q+nmax));
     train_err_ELM(i) = train_error_elm(end);
     test_err_ELM(i) = test_error_elm(end);
+    train_accuracy_elm(i) = train_acc_elm(end);
+    test_accuracy_elm(i) = test_acc_elm(end);
 
 end
 
 ssfn_mean_train_err = mean(train_err_SSFN);
 ssfn_mean_test_err = mean(test_err_SSFN);
 
+ssfn_mean_train_accuracy = mean(train_accuracy_ssfn);
+ssfn_mean_test_accuracy = mean(test_accuracy_ssfn);
+elm_mean_train_accuracy = mean(train_accuracy_elm);
+elm_mean_test_accuracy = mean(test_accuracy_elm);
+
+
 elm_mean_train_err = mean(train_err_ELM);
 elm_mean_test_err = mean(test_err_ELM);
 
 disp([ 'Train and Test estimate error SSFN = ',num2str(ssfn_mean_train_err),' , ',num2str(ssfn_mean_test_err)]);
 disp([ 'Train and Test estimate error ELM = ',num2str(elm_mean_train_err),' , ',num2str(elm_mean_test_err)])
+disp([ 'Train and Test accuracy of SSFN = ',num2str(ssfn_mean_train_accuracy),' , ',num2str(ssfn_mean_test_accuracy)])
+disp([ 'Train and Test accuracy of ELM = ',num2str(elm_mean_train_accuracy),' , ',num2str(elm_mean_test_accuracy)])
 

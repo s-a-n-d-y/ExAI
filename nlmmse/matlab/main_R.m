@@ -38,7 +38,7 @@ end
 
 %% MSE evaluation of SSFN and ELM
 ssfn_normalized_MSE = zeros(len,1);
-elm__normalized_MSE = zeros(len,1);
+elm_normalized_MSE = zeros(len,1);
 normalized_MSE = zeros(len,1);
 for k = 1:len
     mu_m = a(k)*mu; % mean with scaling parameter a(k)
@@ -55,10 +55,10 @@ for k = 1:len
         end
         x = x';
         idx = (randperm(sample(k))<=sample(k)*0.7);
-        [ssfn_SE(iter), elm_SE(iter)] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
+        [ssfn_SE(iter), elm_SE(iter), ~, ~] = ml_estimator(x(idx,:)',t(idx,:)',x(~idx,:)',t(~idx,:)');
     end
     ssfn_normalized_MSE(k) = 10*log10((sum(ssfn_SE)/Monte_Carlo_H)/sig_pow(k));
-    elm__normalized_MSE(k) = 10*log10((sum(elm_SE)/Monte_Carlo_H)/sig_pow(k));
+    elm_normalized_MSE(k) = 10*log10((sum(elm_SE)/Monte_Carlo_H)/sig_pow(k));
     %% MSE evaluation of MMSE estimator
     
     t = random(gm,Monte_Carlo_NMSE);
@@ -108,7 +108,7 @@ for k = 1:len
     hold on;grid on;
     plot(data,ssfn_normalized_MSE(1:k),'-.bs')
     hold on;grid on;
-    plot(data,elm__normalized_MSE(1:k),'-.gs')
+    plot(data,elm_normalized_MSE(1:k),'-.gs')
     
     xlabel(x_label);
     ylabel('NMSE (dB)');

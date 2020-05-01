@@ -1,4 +1,4 @@
-function [T_hat, Tt_hat, train_error, test_error]=ELM(X, T, Xt, Tt, lam, NumNodes)
+function [T_hat, Tt_hat, train_error, test_error, train_accuracy, test_accuracy]=ELM(X, T, Xt, Tt, lam, NumNodes)
 
 % % % % % % % Inputs % % % % % % % %
 % X: Train input
@@ -64,5 +64,10 @@ parfor i=1:size(test_diff,2)
     test_norm(i) = norm(test_diff(:,i))^2;
 end
 test_error=mean(test_norm);
+
+
+train_accuracy=Calculate_accuracy(T, T_hat);
+test_accuracy=Calculate_accuracy(Tt,Tt_hat);
+
 
 return
