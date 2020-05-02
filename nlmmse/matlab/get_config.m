@@ -19,7 +19,7 @@ switch lower(caseString)
     case "rb_a_1"
         config.b = logspace(3,-4,20);
         config.len = length(config.b);
-        config.a = 10*ones(1,config.len); %Do with a=1 and a=10
+        config.a = 1*ones(1,config.len); %Do with a=1 and a=10
         config.sample = 3e3*ones(1,config.len);
         config.p = 10*ones(1,config.len); %dimension of observation x
         config.q = 10; % Dimension of data t
