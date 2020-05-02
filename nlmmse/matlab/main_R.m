@@ -96,7 +96,7 @@ for k = 1:len
             file_name = 'mmse_1';
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
-            xlim([-8 33])
+            xlim([-10 35])
             ylim([-25 5])
 
                       
@@ -106,7 +106,7 @@ for k = 1:len
             file_name = 'mmse_2_a_1';
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k))]};
-            xlim([-10 33])
+            xlim([-10 35])
             ylim([-25 5])
             
         case 'rb_a_10'
@@ -115,7 +115,7 @@ for k = 1:len
             file_name = 'mmse_2_a_10';
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k))]};
-            xlim([-10 33])
+            xlim([-10 35])
             ylim([-25 5])
             
         case 'rc'
@@ -161,4 +161,4 @@ end
 % set(gca,'fontsize',20)
 
 toc;
-close all;clear;clc;
+%close all;clear;clc;

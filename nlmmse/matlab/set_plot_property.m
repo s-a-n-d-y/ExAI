@@ -25,6 +25,6 @@ function set_plot_property(fig, x_label, y_label, legend_label, plot_title, file
     
     drawnow
     
-    saveas(fig,strcat('plots/',file_name),'epsc')
-    savefig(strcat('plots/',file_name,'.fig'))
+    saveas(fig,strcat('plots1/',file_name),'epsc')
+    savefig(strcat('plots1/',file_name,'.fig'))
 end

@@ -117,7 +117,7 @@ for k = 1:len
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             file_name = 'mmse_c_dn_1';
-            xlim([-8 30])
+            xlim([-10 35])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
             
@@ -167,4 +167,4 @@ end
 % set(gca,'fontsize',20)
 
 toc;
-close all;clear;clc;
+%close all;clear;clc;

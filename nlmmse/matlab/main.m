@@ -1,3 +1,4 @@
+close all;clear;clc;
 tic;
 regression = ["ra" "rb_a_1" "rb_a_10" "rc" "rd"];
 parfor i=1:length(regression)
