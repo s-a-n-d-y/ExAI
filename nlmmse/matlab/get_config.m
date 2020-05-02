@@ -71,7 +71,7 @@ switch lower(caseString)
         % 1<=n_diff_alpha<=M
         % 1 = Makes all blobs having same alpha and hence same size
         % config.M = Makes all blobs having random alpha an different sizes
-        n_diff_alpha = 1;
+        n_diff_alpha = config.M;
         count = randi([1,n_diff_alpha],config.M,1); %mixing proportions
         config.alpha = count/sum(count);
         config.sample = round(3e3*config.alpha); % number of data points converted to nearest integer
@@ -88,7 +88,7 @@ switch lower(caseString)
         % 1<=n_diff_alpha<=M
         % 1 = Makes all blobs having same alpha and hence same size
         % config.M = Makes all blobs having random alpha an different sizes
-        n_diff_alpha = 1;
+        n_diff_alpha = config.M;
         count = randi([1,n_diff_alpha],config.M,1); %mixing proportions
         config.alpha = count/sum(count);
         config.sample = round(3e3*config.alpha); % number of data points converted to nearest integer

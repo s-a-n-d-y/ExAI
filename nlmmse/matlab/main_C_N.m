@@ -101,6 +101,7 @@ for k = 1:len
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             file_name = 'mmse_c_1';
+            xlim([-8 30])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
             
@@ -125,7 +126,7 @@ for k = 1:len
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
     end
-    xlim([-8 30])
+    
     plot(data,mean_CE(1:k),'-.rp','MarkerSize',2)
     hold on;grid on;
     plot(data,mean_ssfn_CE(1:k),'-.bs','MarkerSize',2)

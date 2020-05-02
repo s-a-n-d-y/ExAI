@@ -117,29 +117,30 @@ for k = 1:len
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             file_name = 'mmse_c_dn_1';
+            xlim([-8 30])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                ['b = ' num2str(b(k))]};
+                          ['b = ' num2str(b(k))]};
             
         case 'cdb'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
             file_name = 'mmse_c_dn_2';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             
         case 'cdc'
             data = p(1:k);
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
             file_name = 'mmse_c_dn_3';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             
         case 'cdd'
             data = sample(1:k);
             x_label = 'Size of dataset';
             file_name = 'mmse_c_dn_4';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
     end
     
     plot(data,mean_CE(1:k),'-.rp','MarkerSize',2)
