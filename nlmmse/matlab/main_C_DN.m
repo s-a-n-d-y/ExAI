@@ -118,14 +118,16 @@ for k = 1:len
         case 'cda_a'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
-            xlim([-10 35])
+            xlim([-10 25])
+            ylim([0 1])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
         
         case 'cda_b'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
-            xlim([-10 35])
+            xlim([-10 25])
+            ylim([0 1])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
                       
