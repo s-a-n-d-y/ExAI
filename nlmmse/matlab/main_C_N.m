@@ -23,30 +23,32 @@ M = config.M; % number of Gaussian mixtures
 alpha = config.alpha; % Mixing proportion probability
 sample = config.sample; % number of data points in each mixture
 Monte_Carlo_H = config.Monte_Carlo_H; % No.of simulations for generating ranfom H
-
+file_name = config.file_name; % File name where experital data will be saved 
+folder_name = config.folder_name; % Folder name where experital data will be saved
+gamma = config.gamma;
 
 %% Gaussian mixture model generation
 mu = randn(q,M); % Generating random mean vectors
 mu = normc(mu); %Normalize columns of mu_m to have unit norm
 T = sum(mu,2);
-sig_pow = (q+a.^2-(a./M).^2.*trace(T*T'));
+sig_pow = (q/M).*sum(gamma,2)'+ a.^2-(a./M).^2.*trace(T*T');
 noise_pow = b;
 SNR = (1./noise_pow).*sig_pow; % SNR based on different scaling parameters 'a'
 SNR_dB = 10.*log10(SNR);
-Cm = zeros(q,q,M);
-%t = zeros(sum(sample),q);
-for i=1:M
-    %C = sqrt(0.01)*randn(p);
-    %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
-    Cm(:,:,i) = eye(q); %
-end
 
 %% CE evaluation of optimal estimator
 mean_CE = zeros(len,1);
 mean_ssfn_CE = zeros(len,1);
 mean_elm_CE = zeros(len,1);
+Cm = zeros(q,q,M,len);
 
 for k = 1:len
+    for i=1:M
+        %C = sqrt(0.01)*randn(p);
+        %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
+        Cm(:,:,i,k) = gamma(k,i)*eye(q); %
+    end
+    
     %% Sample data generation
     n_samples = sum(sample);
     m_star = zeros(n_samples,1);
@@ -54,7 +56,7 @@ for k = 1:len
     m_true = [];
     t = [];
     for m=1:M
-        data = mvnrnd(mu_m(:,m)', Cm(:,:,m), sample(m));
+        data = mvnrnd(mu_m(:,m)', Cm(:,:,m,k), sample(m));
         m_true = [m_true; m*ones(sample(m),1)];
         t = [t, data'];
     end
@@ -87,7 +89,7 @@ for k = 1:len
         mu_n = zeros(p(k),1);
         for m =1:M
             MU = [H, eye(p(k))]*[mu_m(:,m); mu_n];
-            SIGMA = [H, eye(p(k))]*[Cm(:,:,m), zeros(q,p(k));zeros(p(k),q), Cn]*[H, eye(p(k))]';
+            SIGMA = [H, eye(p(k))]*[Cm(:,:,m,k), zeros(q,p(k));zeros(p(k),q), Cn]*[H, eye(p(k))]';
             y(m) = alpha(m)*mvnpdf(x,MU,SIGMA);
         end
         [~, m_star(iter)] = max(y);
@@ -97,34 +99,36 @@ for k = 1:len
     mean_CE(k) = sum(count)/n_samples;
      
     switch experiment
-        case 'ca'
+        case 'ca_a'
             data = SNR_dB(1:k);
-            x_label = 'SNR (dB)';
-            file_name = 'mmse_c_1';
+            x_label = 'SNR (dB)';          
             xlim([-10 35])
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
-            
-        case 'cb'
+        case 'ca_b'
             data = SNR_dB(1:k);
-            x_label = 'SNR (dB)';
-            file_name = 'mmse_c_2';
-            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
-            
-        case 'cc'
-            data = p(1:k);
-            x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
-            file_name = 'mmse_c_3';
-            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
-            
-        case 'cd'
-            data = sample(1:k);
-            x_label = 'Size of dataset';
-            file_name = 'mmse_c_4';
-            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
-                          ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+            x_label = 'SNR (dB)';          
+            xlim([-10 35])
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['b = ' num2str(b(k))]};
+                      
+%         case 'cb_a'
+%             data = SNR_dB(1:k);
+%             x_label = 'SNR (dB)';
+%             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+%                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+%             
+%         case 'cc_a'
+%             data = p(1:k);
+%             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+%             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+%                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
+%             
+%         case 'cd_a'
+%             data = sample(1:k);
+%             x_label = 'Size of dataset';
+%             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+%                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
     end
     
     plot(data,mean_CE(1:k),'-.rp','MarkerSize',2)
@@ -134,7 +138,7 @@ for k = 1:len
     plot(data,mean_elm_CE(1:k),'-.go','MarkerSize',2)
     legend_label = {'Optimal' 'SSFN' 'ELM'};
     y_label = 'Accuracy';
-    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name);
+    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name);
     
 end
 

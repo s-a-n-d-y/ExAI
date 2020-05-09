@@ -1,4 +1,4 @@
-function set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name)
+function set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name)
     set(gca,...
     'Units','normalized',...
     'FontUnits','points',...
@@ -25,6 +25,6 @@ function set_plot_property(fig, x_label, y_label, legend_label, plot_title, file
     
     drawnow
     
-    saveas(fig,strcat('plots/',file_name),'epsc')
-    savefig(strcat('plots/',file_name,'.fig'))
+    saveas(fig,strcat(folder_name,'/',file_name),'epsc')
+    savefig(strcat(folder_name,'/',file_name,'.fig'))
 end

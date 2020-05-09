@@ -3,6 +3,9 @@
 function main_R(experiment)
 tic;
 
+% rng(10,'twister');
+
+
 %% Plotting properties as latex
 set(groot,'defaulttextinterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
@@ -23,31 +26,34 @@ q = config.q; % Dimension of data t
 M = config.M; % number of Gaussian mixtures
 Monte_Carlo_NMSE = config.Monte_Carlo_NMSE; % No.of simulations for evaluating optimal NMSE
 Monte_Carlo_H = config.Monte_Carlo_H; % No.of simulations for generating ranfom H
-
+file_name = config.file_name; % File name where experital data will be saved 
+folder_name = config.folder_name; % Folder name where experital data will be saved
+gamma = config.gamma;
 
 %% Gaussian mixture model generation
 mu = randn(q,M); % Generating random mean vectors
 mu = normc(mu); %Normalize columns of mu_m to have unit norm
 alpha = (1/M)*ones(M,1); %mixing proportions
 T = sum(mu,2);
-sig_pow = (q+a.^2-(a./M).^2.*trace(T*T'));
+sig_pow = (q/M).*sum(gamma,2)' + a.^2-(a./M).^2.*trace(T*T');
 noise_pow = b;
 SNR = (1./noise_pow).*sig_pow; % SNR based on different scaling parameters a
 SNR_dB = 10.*log10(SNR);
-Cm = zeros(q,q,M);
-for i=1:M
-    %C = sqrt(0.01)*randn(p);
-    %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
-    Cm(:,:,i) = eye(q); %
-end
 
 %% MSE evaluation of SSFN and ELM
 ssfn_normalized_MSE = zeros(len,1);
 elm_normalized_MSE = zeros(len,1);
 normalized_MSE = zeros(len,1);
+Cm = zeros(q,q,M,len);
+
 for k = 1:len
+    for i=1:M
+        %C = sqrt(0.01)*randn(p);
+        %Css(:,:,i) = C'*C; %covariance matrix for each Gaussian
+        Cm(:,:,i,k) = gamma(k,i)*eye(q); %
+    end
     mu_m = a(k)*mu; % mean with scaling parameter a(k)
-    gm = gmdistribution(mu_m',Cm,alpha); % Gaussian mixture model
+    gm = gmdistribution(mu_m',Cm(:,:,:,k),alpha); % Gaussian mixture model
     %% Data generation for SSFN and ELM
     t = random(gm,sample(k)); % draw random signals from GMM
     x = zeros(p(k),sample(k));
@@ -76,66 +82,93 @@ for k = 1:len
         tmp = zeros(M,1);
         total = 0;
         for m=1:M
-            Mat(:,:,m) = H*Cm(:,:,m)*H' + Cn;
+            Mat(:,:,m) = H*Cm(:,:,m,k)*H' + Cn;
             tmp(m) = alpha(m)*(2*pi)^(-p(k)/2)*(det(Mat(:,:,m)))^(-0.5)*exp(-0.5*(x-(H*mu_m(:,m)+mu_n))'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n))) ;
             total = total + tmp(m);
         end
         t_hat=0;
         for m = 1:M
             beta_m_X = tmp(m)/total;
-            t_hat = t_hat + beta_m_X*(mu_m(:,m) + Cm(:,:,m)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
+            t_hat = t_hat + beta_m_X*(mu_m(:,m) + Cm(:,:,m,k)*H'*inv(Mat(:,:,m))*(x-(H*mu_m(:,m)+mu_n)));
         end
         SE(iter) = norm(t(iter,:)'-t_hat)^2;
     end
     normalized_MSE(k) = 10*log10((sum(SE)/Monte_Carlo_NMSE)/sig_pow(k));
     
     switch experiment
-        case 'ra'
+        case 'ra_a'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
-            file_name = 'mmse_1';
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['b = ' num2str(b(k))]};
             xlim([-8 20])
             ylim([-28 5])
 
                       
-        case 'rb_a_1'
+        case 'rb_a_1_a'
             data = SNR_dB(1:k);
             x_label = 'SNR (dB)';
-            file_name = 'mmse_2_a_1';
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k))]};
             xlim([-10 35])
             ylim([-25 5])
             
-        case 'rb_a_10'
+        case 'rb_a_10_a'
             data = SNR_dB(1:k);
-            x_label = 'SNR (dB)';
-            file_name = 'mmse_2_a_10';
+            x_label = 'SNR (dB)';           
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k))]};
             xlim([-10 35])
             ylim([-25 5])
             
-        case 'rc'
+        case 'rc_a'
             data = p(1:k);
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
-            file_name = 'mmse_3';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             xlim([0 60])
             ylim([-25 5])
             
-        case 'rd'
+        case 'rd_a'
             data = sample(1:k);
             x_label = 'Size of dataset';
-            file_name = 'mmse_4';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
             xlim([0 10000])
             ylim([-25 5])
             
+        case 'ra_b'
+            data = SNR_dB(1:k);
+            x_label = 'SNR (dB)';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['b = ' num2str(b(k))]};
+            xlim([-8 20])
+            ylim([-28 5])
+
+                      
+        case 'rb_b'
+            data = SNR_dB(1:k);
+            x_label = 'SNR (dB)';
+            plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['$\gamma$ = ' num2str(4)]};
+            xlim([-10 35])
+            ylim([-25 5])
+            
+        case 'rc_b'
+            data = p(1:k);
+            x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', Q = ' num2str(q)]
+                          ['$\gamma$ = ' num2str(4) ' and b = ' num2str(b(k))]};
+            xlim([0 60])
+            ylim([-25 5])
+            
+        case 'rd_b'
+            data = sample(1:k);
+            x_label = 'Size of dataset';
+            plot_title = {['SNR = ' num2str(SNR_dB(k)) ', P = ' num2str(p(k)) ', Q = ' num2str(q)]
+                          ['$\gamma$ = ' num2str(4) ' and b = ' num2str(b(k))]};
+            xlim([0 10000])
+            ylim([-25 5])
     end
     
     plot(data,normalized_MSE(1:k),'-.rp','MarkerSize',2)
@@ -145,7 +178,7 @@ for k = 1:len
     plot(data,elm_normalized_MSE(1:k),'-.gs','MarkerSize',2)
     legend_label = {'Optimal' 'SSFN' 'ELM'};
     y_label = 'NMSE (dB)';
-    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name);
+    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name);
 end
 
 %% Plot
