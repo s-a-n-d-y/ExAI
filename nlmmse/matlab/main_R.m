@@ -126,7 +126,7 @@ for k = 1:len
             x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
             plot_title = {['SNR = ' num2str(SNR_dB(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k)) ' and b = ' num2str(b(k))]};
-            xlim([0 60])
+            xlim([0 35])
             ylim([-25 5])
             
         case 'rd_a'
