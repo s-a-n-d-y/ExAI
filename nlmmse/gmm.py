@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.datasets import make_blobs
 from mpl_toolkits import mplot3d
 
+# n_centres = No. of mixtures in the GMM
+# n_dim = Dimension of the data
 def sample_spherical(n_centres, n_dim=3):    
     # uniform points in hypercube
     u_pts = np.random.uniform(low=-1.0, high=1.0, size=(n_dim, n_centres))
@@ -37,30 +39,38 @@ def plot_data (dim=3):
 
     if dim ==2:
         X, y_true = generate_data(n_centres = 30, radius = 1, dim = dim, cluster_std=1.0)
-        plt.subplot(1, 3, 1)
+        plt.subplot(2, 2, 1)
         plt.scatter(X[:, 0], X[:, 1], c=y_true, s=3, cmap='viridis')
 
         X, y_true = generate_data(n_centres = 35, radius = 7, dim = dim, cluster_std=1)
-        plt.subplot(1, 3, 2)
+        plt.subplot(2, 2, 2)
         plt.scatter(X[:, 0], X[:, 1], c=y_true, s=3, cmap='viridis')
 
-        X, y_true = generate_data(n_centres = 50, radius = 40, dim = dim, cluster_std=1.0)
-        plt.subplot(1, 3, 3)
+        X, y_true = generate_data(n_centres = 60, radius = 40, dim = dim, cluster_std=1.0)
+        plt.subplot(2, 2, 3)
+        plt.scatter(X[:, 0], X[:, 1], c=y_true, s=3, cmap='viridis')
+
+        X, y_true = generate_data(n_centres = 100, radius = 100, dim = dim, cluster_std=1.0)
+        plt.subplot(2, 2, 4)
         plt.scatter(X[:, 0], X[:, 1], c=y_true, s=3, cmap='viridis')
 
     if dim == 3:
-        ax = fig.add_subplot(131, projection="3d")
-        X, y_true = generate_data(n_centres = 20, radius = 1, dim = dim, cluster_std=1.0)
+        ax = fig.add_subplot(221, projection="3d")
+        X, y_true = generate_data(n_centres = 30, radius = 1, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
-        ax = fig.add_subplot(132, projection="3d")
-        X, y_true = generate_data(n_centres = 20, radius = 7, dim = dim, cluster_std=1.0)
+        ax = fig.add_subplot(222, projection="3d")
+        X, y_true = generate_data(n_centres = 35, radius = 7, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
-        ax = fig.add_subplot(133, projection="3d")
-        X, y_true = generate_data(n_centres = 50, radius = 40, dim = dim, cluster_std=1.0)
+        ax = fig.add_subplot(223, projection="3d")
+        X, y_true = generate_data(n_centres = 60, radius = 40, dim = dim, cluster_std=1.0)
+        ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
+
+        ax = fig.add_subplot(224, projection="3d")
+        X, y_true = generate_data(n_centres = 100, radius = 100, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
     plt.show()
 
-plot_data(3)
+plot_data(2)
