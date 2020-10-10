@@ -10,7 +10,6 @@ import math
 import timeit
 
 
-
 statsfile = 'data/stats.mat'
 stats = scipy.io.loadmat(statsfile)
 signal_power = np.array(stats['sig_pow'])
