@@ -9,16 +9,17 @@ import pandas as pd
 import os
 import math
 import timeit
+import sklearn.model_selection as sk
 
 statsfile = 'data/stats.mat'
 stats = scipy.io.loadmat(statsfile)
 signal_power = np.array(stats['sig_pow'])
 
 # Choose which network to run and the relevant settings
-model_name = 'FCNN'
-#model_name = 'ResNet'
-epochs = 150
-root = 'data/'
+#model_name = 'FCNN'
+model_name = 'ResNet'
+epochs = 50
+root = 'sample/'
 summary =  {}
 
 # If GPU is avialble then use distributed strategy
@@ -31,7 +32,7 @@ def calculate_error(T, T_hat):
     #   Calculate error
     diff = T-T_hat
     n_samples = diff.shape[0]
-    #print(n_samples)
+    print("No. of testing samples", n_samples)
     diff_norm =  np.linalg.norm(diff)
     error = diff_norm*diff_norm/n_samples
     return error
@@ -165,37 +166,47 @@ for path, subdirs, files in os.walk(root):
                 X = np.array(f['x'])
                 t = np.array(f['t'])
 
-                #print(X.shape)
-                #print(t.shape)
+
+                X_train, X_test, T_train, T_test = sk.train_test_split(X,
+                                                                       t,
+                                                                       test_size=0.3, 
+                                                                       random_state = 100)
+
+                print("The train dataset size is:", X_train.shape)
+                print("The train dataset label size is:", T_train.shape)
+                print("The test dataset size is:", X_test.shape)
+                print("The test dataset label size is:", T_test.shape)
+
                 with strategy.scope():
                     print ('******* Using',model_name,'*******')
                     if model_name == 'FCNN':    
-                        model = build_model(X.shape[1], t.shape[1])
+                        model = build_model(X_train.shape[1], T_train.shape[1])
 
                     if model_name == 'ResNet':
-                        if len(X.shape) == 2:  # if univariate
+                        if len(X_train.shape) == 2:  # if univariate
                             # add a dimension to make it multivariate with one dimension 
-                            X = X.reshape((X.shape[0], X.shape[1], 1))
+                            X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
+                            X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-                        model = build_resnet_model(X.shape[1:], t.shape[1])
+                        model = build_resnet_model(X_train.shape[1:], T_train.shape[1])
 
                     print(model.summary())
 
                     optimizer = keras.optimizers.Adam()
                     model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
-                hist = model.fit(X, t, epochs=epochs, batch_size=256, validation_split = 0.2)
+                hist = model.fit(X_train, T_train, epochs=epochs, batch_size=256, validation_split = 0.2)
 
                 log = pd.DataFrame(hist.history)
 
                 train_loss = log.loc[log['loss'].idxmin]['loss']
                 train_accuracy = log.loc[log['loss'].idxmin]['accuracy']
                 
-                print("The results for", name, "on dataset", datafiles,"is:", train_loss, train_accuracy)
+                t_hat = model.predict(X_test)
                 
-                t_hat = model.predict(X)
-                
-                mse_loss = calculate_error(t, t_hat)
+                mse_loss = calculate_error(T_test, t_hat)
+
+                print("The resulting loss for", name, "on dataset", datafiles,"is:", mse_loss)
 
                 total_mse = total_mse + mse_loss
                 # print("***************************", total_mse)

@@ -3,3 +3,10 @@
 __pycache__/*
 nlmmse/__pycache__/*
 *.m~
+nlmmse/dl/data/
+nlmmse/dl/data/
+nlmmse/dl/sample/
+nlmmse/.vscode/
+nlmmse/dl/.vscode/
+nlmmse/matlab/data/
+nlmmse/matlab/plots/data/
