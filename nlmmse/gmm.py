@@ -39,6 +39,7 @@ def plot_data (dim=3):
 
     if dim ==2:
         X, y_true = generate_data(n_centres = 30, radius = 1, dim = dim, cluster_std=1.0)
+        print(X.shape)
         plt.subplot(2, 2, 1)
         plt.scatter(X[:, 0], X[:, 1], c=y_true, s=3, cmap='viridis')
 
