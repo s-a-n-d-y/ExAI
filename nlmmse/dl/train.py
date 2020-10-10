@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.io
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential,Model,load_model
@@ -9,15 +10,21 @@ import os
 import math
 import timeit
 
-
 statsfile = 'data/stats.mat'
 stats = scipy.io.loadmat(statsfile)
 signal_power = np.array(stats['sig_pow'])
-#model_name = 'FCNN'
-model_name = 'ResNet'
+
+# Choose which network to run and the relevant settings
+model_name = 'FCNN'
+#model_name = 'ResNet'
 epochs = 150
 root = 'data/'
 summary =  {}
+
+# If GPU is avialble then use distributed strategy
+strategy = tf.distribute.MirroredStrategy()
+num_devices = strategy.num_replicas_in_sync
+print('Number of devices: {}'.format(num_devices))
 
 # Fix the error calculation function
 def calculate_error(T, T_hat):
@@ -33,7 +40,7 @@ def calculate_error(T, T_hat):
 def build_resnet_model(input_shape, nb_classes):
     n_feature_maps = 64
 
-    print(input_shape)
+    #print(input_shape)
 
     input_layer = keras.layers.Input(input_shape)
 
@@ -160,23 +167,22 @@ for path, subdirs, files in os.walk(root):
 
                 #print(X.shape)
                 #print(t.shape)
-                if model_name == 'FCNN':
-                    print ('*******Using FCNN*******')
-                    model = build_model(X.shape[1], t.shape[1])
+                with strategy.scope():
+                    print ('******* Using',model_name,'*******')
+                    if model_name == 'FCNN':    
+                        model = build_model(X.shape[1], t.shape[1])
 
-                # model = build_model(X.shape[1])
-                if model_name == 'ResNet':
-                    print ('*******Using ResNet*******')
-                    if len(X.shape) == 2:  # if univariate
-                        # add a dimension to make it multivariate with one dimension 
-                        X = X.reshape((X.shape[0], X.shape[1], 1))
+                    if model_name == 'ResNet':
+                        if len(X.shape) == 2:  # if univariate
+                            # add a dimension to make it multivariate with one dimension 
+                            X = X.reshape((X.shape[0], X.shape[1], 1))
 
-                    model = build_resnet_model(X.shape[1:], t.shape[1])
+                        model = build_resnet_model(X.shape[1:], t.shape[1])
 
-                print(model.summary())
+                    print(model.summary())
 
-                optimizer = keras.optimizers.Adam()
-                model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
+                    optimizer = keras.optimizers.Adam()
+                    model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
 
                 hist = model.fit(X, t, epochs=epochs, batch_size=256, validation_split = 0.2)
 
@@ -185,7 +191,7 @@ for path, subdirs, files in os.walk(root):
                 train_loss = log.loc[log['loss'].idxmin]['loss']
                 train_accuracy = log.loc[log['loss'].idxmin]['accuracy']
                 
-                print(train_loss, train_accuracy)
+                print("The results for", name, "on dataset", datafiles,"is:", train_loss, train_accuracy)
                 
                 t_hat = model.predict(X)
                 
@@ -194,19 +200,19 @@ for path, subdirs, files in os.walk(root):
                 total_mse = total_mse + mse_loss
                 # print("***************************", total_mse)
             total_mse = total_mse/data_len_monte_carlo
-            print ("************MSE =", total_mse)
+            print ("************Monte Carlo MSE for", name, ":", total_mse)
             fcnn_mse = 10*math.log10(total_mse/signal_power[0, int(name)-1])
             summary[name] = fcnn_mse
 
 data = []
-print ("The unsorted list is: ", summary)
+print ("The unsorted list is:", summary)
 for key, value in sorted(summary.items(), key=lambda item: int(item[0])):
    data.append(value)
    #print(key, value)
 
-print("Sorted list data is: ", data)
+print("Sorted list data is:", data)
 
 stop = timeit.default_timer()
 
-print('Time: ', stop - start)  
+print('Time:', stop - start)  
 
