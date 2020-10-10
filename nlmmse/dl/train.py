@@ -18,7 +18,7 @@ signal_power = np.array(stats['sig_pow'])
 # Choose which network to run and the relevant settings
 #model_name = 'FCNN'
 model_name = 'ResNet'
-epochs = 50
+epochs = 100
 root = 'sample/'
 summary =  {}
 
