@@ -16,12 +16,12 @@ switch lower(caseString)
         config.q = 10; % Dimension of data t
         config.M = 40; % number of Gaussian mixtures
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
-        config.Monte_Carlo_H = 50; % No.of simulations for generating ranfom H
+        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.file_name = 'data_ring';
         config.folder_name = 'plots/A';
         config.gamma = ones(config.len,config.M);
         
-    case "data_rb_a_10"
+    case "data_ra_a_10"
         config.b = logspace(3,-4,20);
         config.len = length(config.b);
         config.a = 10*ones(1,config.len); %Do with a=1 and a=10
@@ -30,10 +30,50 @@ switch lower(caseString)
         config.q = 10; % Dimension of data t
         config.M = 40; % number of Gaussian mixtures
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
-        config.Monte_Carlo_H = 50; % No.of simulations for generating ranfom H
+        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
+        config.folder_name = 'plots/A';
+        config.gamma = ones(config.len,config.M);
+    
+    case "data_ra_c"
+        config.p = 5:5:60; %dimension of observation x, we are interested in p/q
+        config.len = length(config.p);
+        config.sample = (3e3)*ones(1,config.len);
+        config.a = 10*ones(1,config.len);
+        config.b = 1*ones(1,config.len);
+        config.q = 10; % Dimension of data t
+        config.M = 40; % number of Gaussian mixtures
+        config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
+        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
         config.gamma = ones(config.len,config.M);
         
+    case "data_ra_d"
+        config.sample = 1e2:1e3/2:5.1e3;
+        config.len = length(config.sample);
+        config.a = 5*ones(1,config.len);
+        config.b = 1*ones(1,config.len);
+        config.p = 10*ones(1,config.len); %dimension of observation x
+        config.q = 10; % Dimension of data t
+        config.M = 40; % number of Gaussian mixtures
+        config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
+        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
+        config.folder_name = 'plots/A';
+        config.gamma = ones(config.len,config.M);
+    
+    case "data_ra_e"
+        config.b_mismatched = logspace(3,-4,20);
+        config.len = length(config.b_mismatched);
+        config.b = 1*ones(1,config.len);
+        config.a = 10*ones(1,config.len); %Do with a=10
+        config.sample = 3e3*ones(1,config.len);
+        config.p = 10*ones(1,config.len); %dimension of observation x
+        config.q = 10; % Dimension of data t
+        config.M = 40; % number of Gaussian mixtures
+        config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
+        config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
+        config.folder_name = 'plots/A';
+        config.gamma = ones(config.len,config.M);
+            
     
     % Paper experiement data type: A
     case "ra_a"

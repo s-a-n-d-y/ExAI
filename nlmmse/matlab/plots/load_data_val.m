@@ -1,4 +1,4 @@
-open A/mmse_2_a_10.fig %open your fig file, data is the name I gave to my file
+open A/mmse_5.fig %open your fig file, data is the name I gave to my file
 D=get(gca,'Children'); %get the handle of the line object
 XData=get(D,'XData'); %get the x data
 YData=get(D,'YData'); %get the y data

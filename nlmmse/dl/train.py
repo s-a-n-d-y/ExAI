@@ -11,16 +11,19 @@ import math
 import timeit
 import sklearn.model_selection as sk
 
+# If the train/test files are generated then no need of train/test split
+is_train_test_generated = True
+# Choose which network to run and the relevant settings
+# Experiment name = mmse-2
+# model_name = 'FCNN'
+model_name = 'ResNet'
+
+epochs = 100
+root = 'data/'
+summary =  {}
 statsfile = 'data/stats.mat'
 stats = scipy.io.loadmat(statsfile)
 signal_power = np.array(stats['sig_pow'])
-
-# Choose which network to run and the relevant settings
-#model_name = 'FCNN'
-model_name = 'ResNet'
-epochs = 100
-root = 'sample/'
-summary =  {}
 
 # If GPU is avialble then use distributed strategy
 strategy = tf.distribute.MirroredStrategy()
@@ -162,15 +165,19 @@ for path, subdirs, files in os.walk(root):
                 #print (datafiles)
                 
                 f = scipy.io.loadmat(datafiles)
-
-                X = np.array(f['x'])
-                t = np.array(f['t'])
-
-
-                X_train, X_test, T_train, T_test = sk.train_test_split(X,
-                                                                       t,
-                                                                       test_size=0.3, 
-                                                                       random_state = 100)
+                
+                if is_train_test_generated:
+                    X_train = np.array(f['x_train'])
+                    T_train = np.array(f['t_train'])
+                    X_test = np.array(f['x_test'])
+                    T_test = np.array(f['t_test'])
+                else:
+                    X = np.array(f['x'])
+                    t = np.array(f['t'])
+                    X_train, X_test, T_train, T_test = sk.train_test_split(X,
+                                                                        t,
+                                                                        test_size=0.3, 
+                                                                        random_state = 100)
 
                 print("The train dataset size is:", X_train.shape)
                 print("The train dataset label size is:", T_train.shape)

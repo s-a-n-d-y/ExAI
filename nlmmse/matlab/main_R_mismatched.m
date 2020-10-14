@@ -59,7 +59,7 @@ for k = 1:len
     t = random(gm,sample(k)); % draw random signals from GMM
     x = zeros(p(k),sample(k));
     x_mismatched = zeros(p(k),sample(k));
-    parfor iter = 1:Monte_Carlo_H   
+    for iter = 1:Monte_Carlo_H   
         H = randn(p(k),q);
         H = normc(H);
         n = sqrt(b(k)/p(k))*randn(p(k),sample(k)); %Zero mean Gaussian noise samples   
@@ -77,7 +77,7 @@ for k = 1:len
     %% MSE evaluation of MMSE estimator
     
     t = random(gm,Monte_Carlo_NMSE);
-    parfor iter = 1:Monte_Carlo_NMSE
+    for iter = 1:Monte_Carlo_NMSE
         H = randn(p(k),q);
         H = normc(H);
         n = sqrt(b_mismatched(k)/p(k))*randn(p(k),1); %Zero mean Gaussian noise samples  
