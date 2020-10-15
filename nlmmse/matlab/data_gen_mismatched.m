@@ -44,6 +44,9 @@ noise_pow = b_mismatched;
 SNR = (1./noise_pow).*sig_pow; % SNR based on different scaling parameters a
 SNR_dB = 10.*log10(SNR);
 
+SNR_dB_Training = 10.*log10((1./b).*sig_pow)
+
+
 %% MSE evaluation stats
 Cm = zeros(q,q,M,len);
 normalized_optimal_MSE = zeros(len,1);
@@ -73,7 +76,7 @@ for k = 1:len
     for iter = 1:Monte_Carlo_H   
         H = randn(p(k),q);
         H = normc(H);
-        n = sqrt(b_mismatched(k)/p(k))*randn(p(k),sample(k)); %Zero mean Gaussian noise samples
+        n = sqrt(b(k)/p(k))*randn(p(k),sample(k)); %Zero mean Gaussian noise samples
         x = H*t' + n; % noisy signal generation
         x = x';
         
@@ -127,7 +130,7 @@ end
 %%
 stats = "data/stats";
 normalized_optimal_MSE = normalized_optimal_MSE';
-save(stats,'sig_pow','SNR_dB','normalized_optimal_MSE');
+save(stats,'sig_pow','SNR_dB','normalized_optimal_MSE','SNR_dB_Training');
 
 toc;
 %close all;clear;clc;

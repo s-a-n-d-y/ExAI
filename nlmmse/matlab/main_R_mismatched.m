@@ -108,7 +108,8 @@ for k = 1:len
             plot_title = {['P = ' num2str(p(k)) ', Q = ' num2str(q)]
                           ['a = ' num2str(a(k))]};
             xlim([-10 60])
-            ylim([-25 5])     
+            ylim([-25 5])
+            title_position = [12, 10];
     end
     
     plot(data,normalized_MSE(1:k),'-.rp','MarkerSize',2)
@@ -118,7 +119,7 @@ for k = 1:len
     plot(data,elm_normalized_MSE(1:k),'-.gs','MarkerSize',2)
     legend_label = {'Optimal' 'SSFN' 'ELM'};
     y_label = 'NMSE (dB)';
-    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name);
+    set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
 end
 
 %% Plot

@@ -1,8 +1,67 @@
-open A/mmse_5.fig %open your fig file, data is the name I gave to my file
-D=get(gca,'Children'); %get the handle of the line object
-XData=get(D,'XData'); %get the x data
-YData=get(D,'YData'); %get the y data
-
-optimal = YData(3)
+% open A/mmse_5_mismatched.fig %open your fig file, data is the name I gave to my file
+% D=get(gca,'Children'); %get the handle of the line object
+% XData=get(D,'XData'); %get the x data
+% YData=get(D,'YData'); %get the y data
+% 
+% optimal = YData(3)
 
 %Data=[XData' YData']; %join the x and y data on one array nx2
+
+% Experiment 5
+clear;clc;
+   
+
+set(groot,'defaulttextinterpreter','latex');
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+
+fig = figure('Units','inches',...
+'Position',[0 0 7 4],...
+'PaperPositionMode','auto');
+
+x_SNR = [-9.63527519592910,-5.95106466961332,-2.26685414329753,1.41735638301826,5.10156690933405,8.78577743564984,12.4699879619656,16.1541984882814,19.8384090145972,23.5226195409130,27.2068300672288,30.8910405935446,34.5752511198604,38.2594616461762,41.9436721724919,45.6278826988077,49.3120932251235,52.9963037514393,56.6805142777551,60.3647248040709];
+
+% 100 epochs 10 monte carlo, (3000 samples) Time taken jointly for SSFN and ELM in Matlab: 9631.732926 secs (3000 samples)
+y_elm = [12.4047321416833,8.75075126179742,5.19651626931014,1.83846563496314,-1.37954515258559,-3.98197271013676,-6.11469870905993,-7.37894008751130,-8.08543869174100,-8.35941645984668,-8.60237793152265,-8.69407887319510,-8.73468500826297,-8.79892432790004,-8.72070493956395,-8.60686584944103,-8.71396242608059,-8.73434370463721,-8.88380524577947,-8.56689183593986];
+y_ssfn = [11.6417597528945,8.30179781596177,4.82974773011714,1.56309769264779,-1.58787736560005,-4.76341047351409,-7.97289438693847,-10.7972237976773,-13.2282700072911,-14.4812526562471,-15.5595858426294,-15.8000112969145,-16.2738121197517,-16.3539863466659,-16.2910623729588,-16.1127788538623,-16.1784784701253,-16.3723775723411,-16.7255292339773,-16.1145389965460];
+y_optimal = [-0.543032862076618,-1.12364631746245,-2.21540360813199,-4.43809137878940,-7.75875902534349,-10.4822828882725,-12.8612718937662,-14.3106225816241,-15.8616347747448,-17.4550252471746,-18.9545762158516,-20.3659140157516,-21.8882818903394,-23.5687798274183,-25.1851793475520,-27.0114308267902,-28.5094759775678,-30.2956873503206,-31.2433483929899,-33.5916540891462];
+
+% 100 epochs 10 monte carlo, Time taken (GPU): 2189.9605 secs (3000 samples)
+y_cnn = [7.708200754384981, 4.240780926274864, 1.330305817684581, -2.0390018916971293, -5.3803738895111755, -8.8880031698075, -10.638604874472005, -11.490920912619014, -12.388475445950402, -12.554261737203378, -12.747768537269, -12.610500879075273, -12.706602571184957, -12.844543513936964, -12.913021899979615, -12.707618279142093, -12.644489843573828, -12.869344066564363, -12.748567422471556, -12.722680807975348];
+% 100 epochs 10 monte carlo, Time taken (GPU): 7906.217163119465 secs (3000 samples)
+y_resnet = [1.4644024529364117, 0.019011620114386993, -1.2497409133173116, -3.109074603808184, -5.533560715233782, -8.542909307734952, -10.010813164808624, -10.656998539117605, -11.360208524832625, -11.500421687875047, -11.621647051578353, -11.462350036476002, -11.502166430161264, -11.58896741659266, -11.620285795615203, -11.508323838675668, -11.484968682601233, -11.598891064173182, -11.598713271473267, -11.477060116982269];
+
+file_name = 'mmse_5';
+folder_name = 'plots/A';
+        
+plot_title = {['P = 10, ' 'Q = 10']
+                ['a = 10']};
+            
+                      
+x_label = 'SNR (dB) for varying b with mismatched condition';
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+%legend_label = {'Optimal' 'SSFN' 'ELM'};
+y_label = 'NMSE (dB)';
+title_position = [12, 10];
+    
+xlim([-8 35])
+ylim([-25 15])
+
+training_SNR = 10.396888662680166;
+
+hold on;grid on;
+plot(x_SNR, y_optimal,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+hold on;grid on;
+plot(x_SNR, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+hold on;grid on;
+plot(x_SNR, y_elm,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+hold on;grid on;
+plot(x_SNR, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5) 
+hold on;grid on;
+plot(x_SNR, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+
+text(training_SNR-0.5, -19, sprintf('Training SNR'), 'HorizontalAlignment','center', 'FontWeight','bold')
+annotation('arrow', [19.6/43, 19.6/43], [8.5/40, 4.5/40], 'LineWidth', 1);
+
+set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
+

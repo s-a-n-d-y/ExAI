@@ -63,7 +63,7 @@ switch lower(caseString)
     case "data_ra_e"
         config.b_mismatched = logspace(3,-4,20);
         config.len = length(config.b_mismatched);
-        config.b = 1*ones(1,config.len);
+        config.b = 10*ones(1,config.len);
         config.a = 10*ones(1,config.len); %Do with a=10
         config.sample = 3e3*ones(1,config.len);
         config.p = 10*ones(1,config.len); %dimension of observation x
@@ -72,6 +72,7 @@ switch lower(caseString)
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
+        config.file_name = 'mmse_5';
         config.gamma = ones(config.len,config.M);
             
     

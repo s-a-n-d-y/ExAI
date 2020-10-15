@@ -15,8 +15,8 @@ import sklearn.model_selection as sk
 is_train_test_generated = True
 # Choose which network to run and the relevant settings
 # Experiment name = mmse-2
-# model_name = 'FCNN'
-model_name = 'ResNet'
+model_name = 'FCNN'
+#model_name = 'ResNet'
 
 epochs = 100
 root = 'data/'
