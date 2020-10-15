@@ -19,7 +19,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.file_name = 'data_ring';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "data_ra_a_10"
         config.b = logspace(3,-4,20);
@@ -32,7 +32,7 @@ switch lower(caseString)
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
     
     case "data_ra_c"
         config.p = 5:5:60; %dimension of observation x, we are interested in p/q
@@ -45,7 +45,7 @@ switch lower(caseString)
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "data_ra_d"
         config.sample = 1e2:1e3/2:5.1e3;
@@ -58,7 +58,7 @@ switch lower(caseString)
         config.Monte_Carlo_NMSE = 1000; % No.of simulations for evaluating optimal MSE
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
     
     case "data_ra_e"
         config.b_mismatched = logspace(3,-4,20);
@@ -73,7 +73,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 10; % No.of simulations for generating ranfom H
         config.folder_name = 'plots/A';
         config.file_name = 'mmse_5';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
             
     
     % Paper experiement data type: A
@@ -89,7 +89,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_1';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "rb_a_1_a"
         config.b = logspace(3,-4,20);
@@ -103,7 +103,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_2_a_1';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "rb_a_10_a"
         config.b = logspace(3,-4,20);
@@ -131,7 +131,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_3';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
       
     case "rd_a"
         config.sample = 1e2:1e3/2:10.1e3;
@@ -160,7 +160,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 100; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_5';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "ca_a"
         config.a = logspace(0,3,20); % scaling parameters
@@ -180,7 +180,7 @@ switch lower(caseString)
         config.Monte_Carlo_H = 20; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_c_1';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     case "cda_a"
         config.a = logspace(0,3,20); % scaling parameters
@@ -200,15 +200,15 @@ switch lower(caseString)
         config.Monte_Carlo_H = 20; % No.of simulations for generating ranfom H
         config.file_name = 'mmse_c_dn_1';
         config.folder_name = 'plots/A';
-        config.gamma = ones(config.len,config.M);
+        config.gamma = ones(config.len,config.M); %Diag-Covariance for each mixture
         
     % Paper experiement data type: B
     case "ra_b"
         config.M = 40; % number of Gaussian mixtures
         len = 20;
-        gamma = rand(len, config.M);
+        gamma = rand(len, config.M); %Diag-Covariance for each mixture
         for i=1:len
-            gamma(i,:) = gamma(i,:)/sum(gamma(i,:)) * i^4;  
+            gamma(i,:) = gamma(i,:)/sum(gamma(i,:)) * i^4; %We increase the covariance based on i
         end
         config.gamma = gamma;
         config.len = size(config.gamma,1);
