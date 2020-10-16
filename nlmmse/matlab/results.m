@@ -9,9 +9,9 @@ fig = figure('Units','inches',...
 'PaperPositionMode','auto');
 
 x_snr = [-6.58249031200274,-6.18561361846295,-5.46420286771958,-4.26941059762383,-2.51529842475687,-0.242729299331180,2.41256942348224,5.30499912218031,8.32853718806938,11.4199775780973,14.5453872217894,17.6874946158789,20.8377388206352,23.9919312724467,27.1480355888674,30.3050647633731,33.4625411181353,36.6202336393892,39.7780306434733,42.9358781459669];
-y_optimal = [-0.619100624177964,-0.660455458691819,-0.738833490150500,-0.927251287995877,-1.33579854464517,-1.95002530816507,-2.91118505358461,-3.91188779331992,-5.22512355301361,-6.56658199261872,-7.71967442550900,-8.97576905130873,-9.95193764688905,-10.6637216722364,-11.2941207277486,-11.8136737272375,-11.8739490676789,-11.8036377413611,-12.2655178311187,-12.1134818119713];
+y_elm = [-0.619100624177964,-0.660455458691819,-0.738833490150500,-0.927251287995877,-1.33579854464517,-1.95002530816507,-2.91118505358461,-3.91188779331992,-5.22512355301361,-6.56658199261872,-7.71967442550900,-8.97576905130873,-9.95193764688905,-10.6637216722364,-11.2941207277486,-11.8136737272375,-11.8739490676789,-11.8036377413611,-12.2655178311187,-12.1134818119713];
 y_ssfn = [-0.447975244573882,-0.499306841155385,-0.589589769909751,-0.820364830854633,-1.31672862437220,-2.14548883923237,-3.62913695826874,-5.54590634951198,-8.21595073878540,-11.0022020443288,-13.4752908328947,-15.7896286927383,-18.1592416154551,-20.0893501599424,-22.0239176099921,-23.8475428392465,-25.1635342636534,-26.8697515270431,-28.5545710845006,-30.1641197274040];
-y_elm = [-0.897646891218553,-0.798645168844431,-0.887019050102097,-1.16522646198850,-1.80291539931001,-2.85327573617060,-4.82438885295286,-8.79923171955261,-14.4293792441198,-18.9060574934210,-22.0991276657209,-25.3707300726165,-28.4265092008580,-31.5909492933880,-34.7534849016691,-37.8812656842734,-41.0915363164839,-44.2771465957668,-47.3916514765553,-50.5628571796373];
+y_optimal = [-0.897646891218553,-0.798645168844431,-0.887019050102097,-1.16522646198850,-1.80291539931001,-2.85327573617060,-4.82438885295286,-8.79923171955261,-14.4293792441198,-18.9060574934210,-22.0991276657209,-25.3707300726165,-28.4265092008580,-31.5909492933880,-34.7534849016691,-37.8812656842734,-41.0915363164839,-44.2771465957668,-47.3916514765553,-50.5628571796373];
 
 % 100 epochs, 10 monte carlo, Time taken: 2764.583151001483 seconds (2000 samples)
 y_cnn =[1.3691090914376247, 1.3375488463459284, 0.9778611688655692, 0.5680739276222084, -0.1145978735956725, -1.3018117699482197, -3.254148000382547, -6.406999775130155, -10.051329275790428, -13.713169836855606, -16.69703473347801, -18.89920920241855, -21.542263187004423, -23.723318800719277, -25.71379075572738, -27.6018103758545, -30.777099314170297, -31.148120336071955, -30.6742315365086, -32.779313192389665];
@@ -26,22 +26,22 @@ plot_title = {['P = 10, ' 'Q = 10']
               ['b = 50']};
                       
 x_label = 'SNR (dB)';
-legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 y_label = 'NMSE (dB)';
 title_position = [6, 1];
-    
+ms = 7;
 xlim([-7 20])
 ylim([-28 5])
 hold on;grid on;
-plot(x_snr, y_elm,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_optimal,'-.rp','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_ssfn,'-.bo','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_optimal,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_elm,'-.ks','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_cnn,'-.md','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_resnet,'-.g>','MarkerSize',ms, 'LineWidth', 1.5)
 
 set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
 
@@ -77,22 +77,24 @@ plot_title = {['P = 10, ' 'Q = 10']
               ['a = 10']};
                       
 x_label = 'SNR (dB)';
-legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 y_label = 'NMSE (dB)';
 title_position = [5, 1];
     
 xlim([-10 20])
 ylim([-25 5])
+
+ms = 7;
 hold on;grid on;
-plot(x_snr, y_optimal,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_optimal,'-.rp','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_ssfn,'-.bo','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_elm,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_elm,'-.ks','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_cnn,'-.md','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_snr, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_snr, y_resnet,'-.g>','MarkerSize',ms, 'LineWidth', 1.5)
 
 set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
 
@@ -127,7 +129,7 @@ plot_title = {['SNR = 20.388' ', Q = 10']
                 ['a = 10' ' and b = 1']};
                       
 x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
-legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
 y_label = 'NMSE (dB)';
 title_position = [20, 1];
@@ -135,16 +137,17 @@ title_position = [20, 1];
 xlim([5 35])
 ylim([-25 5])
 
+ms = 7;
 hold on;grid on;
-plot(x_P, y_optimal,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_optimal,'-.rp','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_ssfn,'-.bo','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_elm,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_elm,'-.ks','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5) 
+plot(x_P, y_cnn,'-.md','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_resnet,'-.g>','MarkerSize',ms, 'LineWidth', 1.5)
 
 set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
 
@@ -180,7 +183,7 @@ plot_title = {['SNR = 15.3995' ', P = 10, Q = 10']
             
                       
 x_label = 'Size of dataset';
-legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
 y_label = 'NMSE (dB)';
 title_position = [2500, 1];
@@ -188,16 +191,17 @@ title_position = [2500, 1];
 xlim([0 5200])
 ylim([-25 5])
 
+ms = 7;
 hold on;grid on;
-plot(x_P, y_optimal,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_optimal,'-.rp','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_ssfn,'-.bo','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_elm,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_elm,'-.ks','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5) 
+plot(x_P, y_cnn,'-.md','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_P, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_P, y_resnet,'-.g>','MarkerSize',ms, 'LineWidth', 1.5)
 
 set_plot_property(fig, x_label, y_label, legend_label, plot_title, file_name, folder_name, title_position);
 
@@ -234,7 +238,7 @@ plot_title = {['P = 10, ' 'Q = 10']
             
                       
 x_label = 'SNR (dB) for varying b with mismatched condition';
-legend_label = {'Optimal' 'SSFN' 'ELM', 'FCNN', 'ResNet'};
+legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
 y_label = 'NMSE (dB)';
 title_position = [12, 10];
@@ -244,16 +248,18 @@ ylim([-25 15])
 
 training_SNR = 10.396;
 
+ms = 7;
 hold on;grid on;
-plot(x_SNR, y_optimal,'-.rp','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_SNR, y_optimal,'-.rp','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_SNR, y_ssfn,'-.bs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_SNR, y_ssfn,'-.bo','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_SNR, y_elm,'-.cs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_SNR, y_elm,'-.ks','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_SNR, y_cnn,'-.ms','MarkerSize',4, 'LineWidth', 1.5) 
+plot(x_SNR, y_cnn,'-.md','MarkerSize',ms, 'LineWidth', 1.5)
 hold on;grid on;
-plot(x_SNR, y_resnet,'-.gs','MarkerSize',4, 'LineWidth', 1.5)
+plot(x_SNR, y_resnet,'-.g>','MarkerSize',ms, 'LineWidth', 1.5)
+
 
 text(training_SNR-1.5, -19, sprintf('Training SNR = 10.396 dB'), 'HorizontalAlignment','center', 'FontWeight','bold')
 annotation('arrow', [19.8/43, 19.8/43], [8.5/40, 4.5/40], 'LineWidth', 2, 'Color','black');
