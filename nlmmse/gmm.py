@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import make_blobs
 from mpl_toolkits import mplot3d
+from matplotlib import rc
+
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 # n_centres = No. of mixtures in the GMM
 # n_dim = Dimension of the data
@@ -57,21 +61,25 @@ def plot_data (dim=3):
 
     if dim == 3:
         ax = fig.add_subplot(221, projection="3d")
+        ax.set_title("a=1")
         X, y_true = generate_data(n_centres = 30, radius = 1, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
         ax = fig.add_subplot(222, projection="3d")
+        ax.set_title("a=7")
         X, y_true = generate_data(n_centres = 35, radius = 7, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
         ax = fig.add_subplot(223, projection="3d")
+        ax.set_title("a=40")
         X, y_true = generate_data(n_centres = 60, radius = 40, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
         ax = fig.add_subplot(224, projection="3d")
+        ax.set_title("a=100")
         X, y_true = generate_data(n_centres = 100, radius = 100, dim = dim, cluster_std=1.0)
         ax.scatter3D(X[:, 0], X[:, 1], X[:, 2], c=y_true, s=3, cmap='viridis')
 
     plt.show()
 
-plot_data(2)
+plot_data(3)

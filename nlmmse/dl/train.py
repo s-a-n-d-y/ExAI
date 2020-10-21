@@ -15,8 +15,8 @@ import sklearn.model_selection as sk
 is_train_test_generated = True
 # Choose which network to run and the relevant settings
 # Experiment name = mmse-2
-model_name = 'FCNN'
-#model_name = 'ResNet'
+#model_name = 'FFNN'
+model_name = 'ResNet'
 
 epochs = 100
 root = 'data/'
@@ -186,7 +186,7 @@ for path, subdirs, files in os.walk(root):
 
                 with strategy.scope():
                     print ('******* Using',model_name,'*******')
-                    if model_name == 'FCNN':    
+                    if model_name == 'FFNN':    
                         model = build_model(X_train.shape[1], T_train.shape[1])
 
                     if model_name == 'ResNet':
@@ -219,8 +219,8 @@ for path, subdirs, files in os.walk(root):
                 # print("***************************", total_mse)
             total_mse = total_mse/data_len_monte_carlo
             print ("************Monte Carlo MSE for", name, ":", total_mse)
-            fcnn_mse = 10*math.log10(total_mse/signal_power[0, int(name)-1])
-            summary[name] = fcnn_mse
+            FFNN_mse = 10*math.log10(total_mse/signal_power[0, int(name)-1])
+            summary[name] = FFNN_mse
 
 data = []
 print ("The unsorted list is:", summary)

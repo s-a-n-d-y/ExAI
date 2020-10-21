@@ -23,11 +23,11 @@ file_name = 'mmse_1';
 folder_name = 'plots/A';
         
 plot_title = {['P = 10, ' 'Q = 10']
-              ['b = 50']};
+              ['M = 40, ' 'b = 50']};
                       
 x_label = 'SNR (dB)';
 legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
-y_label = 'NMSE (dB)';
+y_label = 'NMMSE (dB)';
 title_position = [6, 1];
 ms = 7;
 xlim([-7 20])
@@ -78,7 +78,7 @@ plot_title = {['P = 10, ' 'Q = 10']
                       
 x_label = 'SNR (dB)';
 legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
-y_label = 'NMSE (dB)';
+y_label = 'NMMSE (dB)';
 title_position = [5, 1];
     
 xlim([-10 20])
@@ -128,10 +128,10 @@ folder_name = 'plots/A';
 plot_title = {['SNR = 20.388' ', Q = 10']
                 ['a = 10' ' and b = 1']};
                       
-x_label = 'Dimension of observation (P) w.r.t. a given Dimension of data (Q=10)';
+x_label = 'Dimension of observation (P)';
 legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
-y_label = 'NMSE (dB)';
+y_label = 'NMMSE (dB)';
 title_position = [20, 1];
     
 xlim([5 35])
@@ -185,7 +185,7 @@ plot_title = {['SNR = 15.3995' ', P = 10, Q = 10']
 x_label = 'Size of dataset';
 legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
-y_label = 'NMSE (dB)';
+y_label = 'NMMSE (dB)';
 title_position = [2500, 1];
     
 xlim([0 5200])
@@ -237,10 +237,10 @@ plot_title = {['P = 10, ' 'Q = 10']
                 ['a = 10']};
             
                       
-x_label = 'SNR (dB) for varying b with mismatched condition';
+x_label = 'SNR (dB) for mismatched condition';
 legend_label = {'Optimal' 'SSFN' 'ELM', 'FFNN', 'ResNet'};
 %legend_label = {'Optimal' 'SSFN' 'ELM'};
-y_label = 'NMSE (dB)';
+y_label = 'NMMSE (dB)';
 title_position = [12, 10];
     
 xlim([-8 35])
